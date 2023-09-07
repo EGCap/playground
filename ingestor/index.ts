@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
 import dotenv from 'dotenv';
-import { getEmbedding, parseData } from './utils';
+import { getChunkCount, getEmbedding, parseData } from './utils';
 
 dotenv.config();
 
@@ -22,18 +22,21 @@ async function main() {
     }
 
     // Reads a filename of a JSONL with textchunks
-    const textChunks = (await parseData(filename)) // TODO: Remove slice
-    const chunkSize = 100;
-    console.log("Loaded text chunks", textChunks.length);
-    
+    const chunkCount = await getChunkCount(filename);
+    const batchSize = 100;
+
     // Initialize Supabase
     const supabase = createClient(process.env.SUPABASE_URL as string, process.env.SUPABASE_SERVICE_KEY as string)
 
-    for(let i = 0; i < textChunks.length; i += chunkSize) {
+    for(let i = 0; i < chunkCount; i += batchSize) {
+        // Load chunk of textchunks
+        const textChunks = await parseData(filename, i, i + batchSize)
+        console.log("Loaded text chunks", textChunks.length);
         // Embeds the textchunks
         let completed = 0;
         const embeddedChunks = await Promise.all(textChunks.map(async (textChunk) => {
             const embedding = await getEmbedding(textChunk.toEmbed);
+
             completed++;
             console.log(`Completed ${completed}`);
             return {
@@ -44,7 +47,7 @@ async function main() {
 
         // Ensure all promises succeeded
         if (embeddedChunks.some((embeddedChunk) => !embeddedChunk.embedding)) {
-            console.error("Some text chunks failed to embed", i, "to", i + chunkSize);
+            console.error("Some text chunks failed to embed", i, "to", i + batchSize);
             return;
         }
 
@@ -61,10 +64,10 @@ async function main() {
             .insert(uploadRows)
 
         if (error) {
-            console.error("Upload error:", i, "to", i + chunkSize);
+            console.error("Upload error:", i, "to", i + batchSize);
             console.error(error);
         }else{
-            console.log("Upload chunk complete:", i, "to", i + chunkSize);
+            console.log("Upload chunk complete:", i, "to", i + batchSize);
         }
     }
 }
