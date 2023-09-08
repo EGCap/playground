@@ -2,7 +2,9 @@ import fs from 'fs/promises';
 
 import { WikiTextChunk } from '../types';
 
-export const parseData = async (filename: string, startLine: number, endLine: number) => {
+export const parseData = async (
+    filename: string, startLine: number, endLine: number
+) => {
     // read JSONL file
     let rawdata = await fs.readFile(filename, 'utf-8');
     let lines = rawdata.split('\n');
