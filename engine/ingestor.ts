@@ -1,11 +1,11 @@
-import { createClient } from '@supabase/supabase-js';
-
 import dotenv from 'dotenv';
-import { getChunkCount, getEmbedding, parseData } from './utils';
+import { getChunkCount, parseData } from './utils/data';
+import { getEmbedding } from './utils/embedding';
+import { DATABASE, DATASET, EMBEDDING_MODEL, EmbeddedWikiTextChunk } from './types';
+import { uploadEmbeddings } from './utils/database';
 
 dotenv.config();
 
-// Uploads to Supabase
 async function main() {
     const args = process.argv.slice(2);
     const filename = args[0];
@@ -21,28 +21,33 @@ async function main() {
         return;
     }
 
+    if (!Object.values(DATASET).includes(datasetName as DATASET)) {
+        console.log("Please provide a valid dataset name");
+        return;
+    }
+    const dataset: DATASET = DATASET[datasetName as keyof typeof DATASET];
+
     // Reads a filename of a JSONL with textchunks
     const chunkCount = await getChunkCount(filename);
     const batchSize = 100;
-
-    // Initialize Supabase
-    const supabase = createClient(process.env.SUPABASE_URL as string, process.env.SUPABASE_SERVICE_KEY as string)
 
     for(let i = 0; i < chunkCount; i += batchSize) {
         // Load chunk of textchunks
         const textChunks = await parseData(filename, i, i + batchSize)
         console.log("Loaded text chunks", textChunks.length);
+        
         // Embeds the textchunks
         let completed = 0;
-        const embeddedChunks = await Promise.all(textChunks.map(async (textChunk) => {
-            const embedding = await getEmbedding(textChunk.toEmbed);
-
+        const embeddedChunks = await Promise.all(textChunks.map(async (textChunk, idx) => {
+            const embedding = await getEmbedding(textChunk.toEmbed, EMBEDDING_MODEL.OPEN_AI);
             completed++;
             console.log(`Completed ${completed}`);
+
             return {
-                ...textChunk,
-                embedding
-            }
+                textChunk: textChunk,
+                chunkIndex: i + idx,
+                embedding: embedding,
+            } as EmbeddedWikiTextChunk
         }));
 
         // Ensure all promises succeeded
@@ -51,22 +56,12 @@ async function main() {
             return;
         }
 
-        // Upload to Supabase
-        const uploadRows = embeddedChunks.map((embeddedChunk) => {
-            return {
-            dataset: datasetName,
-            text: embeddedChunk.value.text,
-            embedding: embeddedChunk.embedding,
-            }
-        });
-        const { error } = await supabase
-            .from('ada_002_embeddings')
-            .insert(uploadRows)
-
+        // Upload to database
+        const error = await uploadEmbeddings(embeddedChunks, dataset, EMBEDDING_MODEL.OPEN_AI, DATABASE.SUPABASE)
         if (error) {
             console.error("Upload error:", i, "to", i + batchSize);
             console.error(error);
-        }else{
+        } else {
             console.log("Upload chunk complete:", i, "to", i + batchSize);
         }
     }
