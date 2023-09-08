@@ -1,7 +1,8 @@
 import dotenv from 'dotenv';
 import { getChunkCount, parseData } from './utils/data';
-import { getEmbedding, uploadEmbeddings } from './utils/embedding';
-import { DATABASE, EMBEDDING_MODEL_TYPE, EmbeddedWikiTextChunk } from './types';
+import { getEmbedding } from './utils/embedding';
+import { DATABASE, DATASET, EMBEDDING_MODEL, EmbeddedWikiTextChunk } from './types';
+import { uploadEmbeddings } from './utils/database';
 
 dotenv.config();
 
@@ -20,6 +21,12 @@ async function main() {
         return;
     }
 
+    if (!Object.values(DATASET).includes(datasetName as DATASET)) {
+        console.log("Please provide a valid dataset name");
+        return;
+    }
+    const dataset: DATASET = DATASET[datasetName as keyof typeof DATASET];
+
     // Reads a filename of a JSONL with textchunks
     const chunkCount = await getChunkCount(filename);
     const batchSize = 100;
@@ -31,13 +38,14 @@ async function main() {
         
         // Embeds the textchunks
         let completed = 0;
-        const embeddedChunks = await Promise.all(textChunks.map(async (textChunk) => {
-            const embedding = await getEmbedding(textChunk.toEmbed, EMBEDDING_MODEL_TYPE.OPEN_AI);
-
+        const embeddedChunks = await Promise.all(textChunks.map(async (textChunk, idx) => {
+            const embedding = await getEmbedding(textChunk.toEmbed, EMBEDDING_MODEL.OPEN_AI);
             completed++;
             console.log(`Completed ${completed}`);
+
             return {
                 textChunk: textChunk,
+                chunkIndex: i + idx,
                 embedding: embedding,
             } as EmbeddedWikiTextChunk
         }));
@@ -49,7 +57,7 @@ async function main() {
         }
 
         // Upload to database
-        const error = uploadEmbeddings(embeddedChunks, datasetName, DATABASE.SUPABASE)
+        const error = await uploadEmbeddings(embeddedChunks, dataset, EMBEDDING_MODEL.OPEN_AI, DATABASE.SUPABASE)
         if (error) {
             console.error("Upload error:", i, "to", i + batchSize);
             console.error(error);

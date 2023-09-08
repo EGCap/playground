@@ -9,13 +9,18 @@ export type WikiTextChunk = {
 
 export type EmbeddedWikiTextChunk = {
     textChunk: WikiTextChunk,
+    chunkIndex: number,
     embedding: number[],
 }
 
-export enum EMBEDDING_MODEL_TYPE {
-    OPEN_AI = "OPEN_AI"
+export enum DATASET {
+    WIKIPEDIA = "wikipedia"
 }
 
 export enum DATABASE {
     SUPABASE = "SUPABASE"
+}
+
+export enum EMBEDDING_MODEL {
+    OPEN_AI = "OPEN_AI"
 }

@@ -1,11 +1,11 @@
 import { getOpenAIEmbedding } from '../clients/openai';
-import { EMBEDDING_MODEL_TYPE } from '../types';
+import { EMBEDDING_MODEL } from '../types';
 
-export const getEmbedding = async (input: string, modelType: EMBEDDING_MODEL_TYPE) => {
+export const getEmbedding = async (input: string, modelType: EMBEDDING_MODEL) => {
     for (let i = 0; i < 4; i++) {
         try {
-            switch (modelType as EMBEDDING_MODEL_TYPE) {
-                case EMBEDDING_MODEL_TYPE.OPEN_AI:
+            switch (modelType as EMBEDDING_MODEL) {
+                case EMBEDDING_MODEL.OPEN_AI:
                     return getOpenAIEmbedding(input);
             }
         }
