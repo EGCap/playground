@@ -2,10 +2,10 @@
   "name": "ingestor",
   "version": "1.0.0",
   "description": "Embed and upload data.",
-  "main": "index.ts",
+  "main": "ingestor.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "script": "ts-node index.ts "
+    "script": "ts-node ingestor.ts "
   },
   "author": "",
   "license": "ISC",

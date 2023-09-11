@@ -14,7 +14,7 @@ export type EmbeddedWikiTextChunk = {
 }
 
 export enum DATASET {
-    WIKIPEDIA = "wikipedia"
+    WIKIPEDIA = "WIKIPEDIA"
 }
 
 export enum DATABASE {
