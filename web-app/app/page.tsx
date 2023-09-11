@@ -24,7 +24,8 @@ export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       <form onSubmit={runQuery}>
-        <input type="text" name="queryString" />
+        <input type="text" size={75} name="queryString" />
+        <div/>
         <button type="submit">Run Query</button>
       </form>
       <p>{response}</p>

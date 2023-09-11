@@ -7,3 +7,4 @@ dist/
 *.js
 *.d.ts
 .DS_STORE
+*.jsonl

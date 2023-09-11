@@ -4,7 +4,7 @@ import { DATASET, EMBEDDING_MODEL, EmbeddedWikiTextChunk } from '../types';
 
 type SupabaseDocument = {
     id: number,
-    document: Text,
+    document: string,
     similarity: number,
 }
 
