@@ -24,3 +24,13 @@ export enum DATABASE {
 export enum EMBEDDING_MODEL {
     OPEN_AI = "OPEN_AI"
 }
+
+export enum LANGUAGE_MODEL {
+    GPT_3_5 = "GPT_3_5"
+}
+
+export type QueryResponse = {
+    query: string,
+    modelResponse: string,
+    retrievedDocuments: string[]
+}
