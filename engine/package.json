@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@dqbd/tiktoken": "^1.0.7",
     "@supabase/supabase-js": "^2.33.1",
     "dotenv": "^16.3.1",
     "openai": "^4.4.0",
