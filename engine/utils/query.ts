@@ -3,7 +3,7 @@ import { fetchNearestDocuments } from "./database";
 import { getEmbedding } from "./embedding";
 import { getChatModelResponse } from "./inference";
 
-const DEFAULT_THRESHOLD: number = 0.8
+const DEFAULT_THRESHOLD: number = 0.7
 const DEFAULT_MAX_MATCHES: number = 5
 
 export const handleQuery = async (queryText: string, fetchDocuments: boolean = true) => {
