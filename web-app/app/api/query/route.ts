@@ -8,6 +8,6 @@ export async function POST(request: NextRequest) {
     const queryResult = await handleQuery(body.query, body.fetchDocs)
     const userResult: string = `Model Response:\n${queryResult.modelResponse}\n\nRetrieved Documents:\n${queryResult.retrievedDocuments.join('\n')}`;
     
-    // todo: actually query the DB
+
     return NextResponse.json({ result: userResult })
   }
