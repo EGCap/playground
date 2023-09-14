@@ -1,4 +1,0 @@
-Running the ingestor script:
-```js
-npm run script data/wikipedia/data.jsonl WIKIPEDIA
-```
