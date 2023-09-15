@@ -6,13 +6,13 @@ import { getChatModelResponse } from "./inference";
 const DEFAULT_THRESHOLD: number = 0.7
 const DEFAULT_MAX_MATCHES: number = 5
 
-export const handleQuery = async (queryText: string, fetchDocuments: boolean = true) => {
+export const handleQuery = async (queryText: string, embeddingModel: EMBEDDING_MODEL | null) => {
     let documents: string[] = []
 
-    if (fetchDocuments) {
-        const embeddingModel: EMBEDDING_MODEL = EMBEDDING_MODEL.OPEN_AI;
-        const queryEmbedding = await getEmbedding(queryText, embeddingModel);
+    if (embeddingModel) {
+        console.log(`Using embedding model: ${embeddingModel}`)
 
+        const queryEmbedding = await getEmbedding(queryText, embeddingModel);
         if (queryEmbedding) {
             documents = await fetchNearestDocuments(
                 queryEmbedding,
