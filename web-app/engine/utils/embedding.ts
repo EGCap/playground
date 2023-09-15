@@ -23,3 +23,16 @@ export const getEmbedding = async (input: string, modelType: EMBEDDING_MODEL) =>
         }
     }
 }
+
+export const getEmbeddingDimensionForModel = (embeddingModel: EMBEDDING_MODEL) => {
+    switch (embeddingModel as EMBEDDING_MODEL) {
+        case EMBEDDING_MODEL.OPEN_AI:
+            return 1536;
+        case EMBEDDING_MODEL.IMAGEBIND:
+            return 1024;
+        case EMBEDDING_MODEL.MPNET_BASE_V2:
+            return 768;
+        case EMBEDDING_MODEL.BGE_LARGE_1_5:
+            return 1024;
+    }
+}

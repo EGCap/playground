@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import {SUPABASE_URL, SUPABASE_SERVICE_KEY} from '../config'
 import { DATASET, EMBEDDING_MODEL, EmbeddedWikiTextChunk } from '../types';
+import { getEmbeddingDimensionForModel } from '../utils/embedding';
 
 type SupabaseDocument = {
     id: number,
@@ -16,18 +17,9 @@ export const uploadEmbeddingsToSupabase = async (
     dataset: DATASET,
     embeddingModel: EMBEDDING_MODEL,
 ) => {
-    // Embedding vector dimension / column depends on embedding model used.
-    let embeddingKey: string;
-    switch (embeddingModel as EMBEDDING_MODEL) {
-        case EMBEDDING_MODEL.OPEN_AI:
-            embeddingKey = 'embedding_1536';
-        case EMBEDDING_MODEL.IMAGEBIND:
-            embeddingKey = 'embedding_1024';
-        case EMBEDDING_MODEL.MPNET_BASE_V2:
-            embeddingKey = 'embedding_768';
-        case EMBEDDING_MODEL.BGE_LARGE_1_5:
-            embeddingKey = 'embedding_1024';
-    }
+    // The column to insert the embedding into depends on the output dimension of the model used to generate the embedding.
+    const embeddingDim = getEmbeddingDimensionForModel(embeddingModel)
+    const embeddingKey: string = `embedding_${embeddingDim}`
 
     const uploadRows = embeddedChunks.map((embeddedChunk) => {
         return {
