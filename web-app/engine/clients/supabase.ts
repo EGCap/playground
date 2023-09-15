@@ -16,13 +16,26 @@ export const uploadEmbeddingsToSupabase = async (
     dataset: DATASET,
     embeddingModel: EMBEDDING_MODEL,
 ) => {
+    // Embedding vector dimension / column depends on embedding model used.
+    let embeddingKey: string;
+    switch (embeddingModel as EMBEDDING_MODEL) {
+        case EMBEDDING_MODEL.OPEN_AI:
+            embeddingKey = 'embedding_1536';
+        case EMBEDDING_MODEL.IMAGEBIND:
+            embeddingKey = 'embedding_1024';
+        case EMBEDDING_MODEL.MPNET_BASE_V2:
+            embeddingKey = 'embedding_768';
+        case EMBEDDING_MODEL.BGE_LARGE_1_5:
+            embeddingKey = 'embedding_1024';
+    }
+
     const uploadRows = embeddedChunks.map((embeddedChunk) => {
         return {
-            dataset: DATASET[dataset],
-            chunk_index: embeddedChunk.chunkIndex,
-            document: embeddedChunk.textChunk.value.text,
-            embedding_model: EMBEDDING_MODEL[embeddingModel],
-            embedding_1536: embeddedChunk.embedding,
+            'dataset': DATASET[dataset],
+            'chunk_index': embeddedChunk.chunkIndex,
+            'document': embeddedChunk.textChunk.value.text,
+            'embedding_model': EMBEDDING_MODEL[embeddingModel],
+            [embeddingKey]: embeddedChunk.embedding,
         }
     });
 

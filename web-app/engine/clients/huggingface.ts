@@ -1,5 +1,6 @@
 import { HUGGING_FACE_API_KEY } from "../config";
- 
+import axios from 'axios';
+
 export const getHuggingFaceEmbedding = async(inputString: string, modelId: string) => {
     const api_url = `https://api-inference.huggingface.co/pipeline/feature-extraction/${modelId}`
     const headers = {
@@ -7,18 +8,19 @@ export const getHuggingFaceEmbedding = async(inputString: string, modelId: strin
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${HUGGING_FACE_API_KEY}`,
     }
-    const rawResponse = await fetch(api_url, {
-        method: 'POST',
-        headers: headers,
-        body: JSON.stringify({
-            'inputs': [inputString],
-            'options': {
-                'wait_for_model': true
-            }
-        })
+    const body = JSON.stringify({
+        'inputs': [inputString],
+        'options': {
+            'wait_for_model': true
+        }
     })
-    const content = await rawResponse.json();
-    return (content as number[][])[0];
+
+    const content: number[][] = await axios.post(
+        api_url,
+        body,
+        {headers: headers}
+    )
+    return content[0];
 }
 
 export const getBGELargeEmbedding = async (input: string) => {
