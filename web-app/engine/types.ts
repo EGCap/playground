@@ -14,19 +14,27 @@ export type EmbeddedWikiTextChunk = {
 }
 
 export enum DATASET {
-    WIKIPEDIA = "WIKIPEDIA"
+    WIKIPEDIA = 'WIKIPEDIA'
 }
 
 export enum DATABASE {
-    SUPABASE = "SUPABASE"
+    SUPABASE = 'SUPABASE'
 }
 
 export enum EMBEDDING_MODEL {
-    OPEN_AI = "OPEN_AI"
+    // OpenAI's hosted text-embedding-ada-002 model.
+    OPEN_AI = 'OPEN_AI', // dim: 1536
+
+    // Models hosted on HuggingFace, taken from the MTEB leaderboard.
+    BGE_LARGE_1_5 = 'BGE_LARGE_1_5', // dim: 1024
+
+    // Models hosted on Replicate.
+    IMAGEBIND = 'IMAGEBIND', // dim: 1024
+    MPNET_BASE_V2 = 'MPNET_BASE_V2' // dim: 768
 }
 
 export enum LANGUAGE_MODEL {
-    GPT_3_5 = "GPT_3_5"
+    GPT_3_5 = 'GPT_3_5'
 }
 
 export type QueryResponse = {
