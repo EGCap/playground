@@ -15,12 +15,12 @@ export const getHuggingFaceEmbedding = async(inputString: string, modelId: strin
         }
     })
 
-    const content: number[][] = await axios.post(
+    const content = await axios.post(
         api_url,
         body,
         {headers: headers}
     )
-    return content[0];
+    return content.data[0];
 }
 
 export const getBGELargeEmbedding = async (input: string) => {
