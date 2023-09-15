@@ -1,5 +1,5 @@
 import { HUGGING_FACE_API_KEY } from "../config";
-
+ 
 export const getHuggingFaceEmbedding = async(inputString: string, modelId: string) => {
     const api_url = `https://api-inference.huggingface.co/pipeline/feature-extraction/${modelId}`
     const headers = {
@@ -18,7 +18,7 @@ export const getHuggingFaceEmbedding = async(inputString: string, modelId: strin
         })
     })
     const content = await rawResponse.json();
-    return content[0];
+    return (content as number[][])[0];
 }
 
 export const getBGELargeEmbedding = async (input: string) => {
