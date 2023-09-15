@@ -1,8 +1,8 @@
 import OpenAI from 'openai';
-import { OPEN_AI_KEY } from '../config';
+import { OPENAI_API_KEY } from '../config';
 import { encodingForModel } from "js-tiktoken";
 
-const openaiClient = new OpenAI({apiKey: OPEN_AI_KEY});
+const openaiClient = new OpenAI({apiKey: OPENAI_API_KEY});
 
 export const getOpenAIEmbedding = async (input: string) => {
     const response = await openaiClient.embeddings.create({
