@@ -34,6 +34,7 @@ export enum EMBEDDING_MODEL {
 }
 
 export enum LANGUAGE_MODEL {
+    // OpenAI's GPT-3.5-Turbo model.
     GPT_3_5 = 'GPT_3_5'
 }
 

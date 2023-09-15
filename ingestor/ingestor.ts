@@ -10,6 +10,7 @@ async function main() {
     const args = process.argv.slice(2);
     const filename = args[0];
     const datasetName = args[1];
+    const embeddingModelName = args[2];
 
     if (!filename) {
         console.error("Please provide a JSONL filename");
@@ -20,12 +21,21 @@ async function main() {
         console.error("Please provide a dataset name");
         return;
     }
-
     if (!Object.values(DATASET).includes(datasetName as DATASET)) {
         console.log("Please provide a valid dataset name");
         return;
     }
     const dataset: DATASET = DATASET[datasetName as keyof typeof DATASET];
+
+    if (!embeddingModelName) {
+        console.error("Please provide an embedding model to use");
+        return;
+    }
+    if (!Object.values(EMBEDDING_MODEL).includes(embeddingModelName as EMBEDDING_MODEL)) {
+        console.log("Please provide a valid dataset name");
+        return;
+    }
+    const embeddingModel: EMBEDDING_MODEL = EMBEDDING_MODEL[embeddingModelName as keyof typeof EMBEDDING_MODEL];
 
     // Reads a filename of a JSONL with textchunks
     const chunkCount = await getChunkCount(filename);
@@ -39,7 +49,7 @@ async function main() {
         // Embeds the textchunks
         let completed = 0;
         const embeddedChunks = await Promise.all(textChunks.map(async (textChunk, idx) => {
-            const embedding = await getEmbedding(textChunk.toEmbed, EMBEDDING_MODEL.OPEN_AI);
+            const embedding = await getEmbedding(textChunk.toEmbed, embeddingModel);
             completed++;
             console.log(`Completed ${completed}`);
 
@@ -57,7 +67,7 @@ async function main() {
         }
 
         // Upload to database
-        const error = await uploadEmbeddings(embeddedChunks, dataset, EMBEDDING_MODEL.OPEN_AI, DATABASE.SUPABASE)
+        const error = await uploadEmbeddings(embeddedChunks, dataset, embeddingModel, DATABASE.SUPABASE)
         if (error) {
             console.error("Upload error:", i, "to", i + batchSize);
             console.error(error);
