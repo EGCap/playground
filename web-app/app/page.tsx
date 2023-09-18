@@ -47,6 +47,7 @@ export default function Home() {
             <input
               type="radio"
               value={model[0]}
+              key={model[0]}
               name="modelChoice"
               checked={embeddingModelChoice === model[0]}
               onChange={e => setEmbeddingModelChoice(e.target.value)}
