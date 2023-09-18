@@ -1,11 +1,16 @@
 "use client";
 
+import { EMBEDDING_MODEL } from "@/engine/types";
 import { FormEvent, MouseEventHandler, useState } from "react";
 
 export default function Home() {
-  const [response, setResponse] = useState<string>("");
   const [generateAnswer, setGenerateAnswer] = useState<boolean>(false);
   const [query, setQuery] = useState<string>("");
+  const [embeddingModelChoice, setEmbeddingModelChoice] = useState<
+    string | null
+  >(null);
+  const [modelResponse, setModelResponse] = useState<string>("");
+  const [retrievedDocs, setRetrievedDocs] = useState<string[]>([]);
 
   const datasets = ["wikipedia", "reddit", "arxiv"];
   const embeddingModels = ["ada-002", "ada-003", "ada-004", "ada-005"];
@@ -19,11 +24,13 @@ export default function Home() {
       body: JSON.stringify({
         query: query,
         generateAnswer: generateAnswer,
+        modelToRetrieveDocs: embeddingModelChoice,
       }),
     });
 
     const data = await response.json();
-    setResponse(data.result);
+    setModelResponse(data.modelResponse);
+    setRetrievedDocs(data.retrievedDocs);
   }
 
   const handleCheckboxChange = () => {
@@ -34,38 +41,99 @@ export default function Home() {
     setQuery(event.currentTarget.value);
   };
 
+  const displayModelChoice = () => {
+    const modelsWithUserFriendlyNames = [
+      [EMBEDDING_MODEL.OPEN_AI, "text-ada-002"],
+      [EMBEDDING_MODEL.IMAGEBIND, "ImageBind"],
+      [EMBEDDING_MODEL.MPNET_BASE_V2, "mpnet-base-v2"],
+    ];
+    return (
+      <div>
+        {modelsWithUserFriendlyNames.map((model) => (
+          <div key={model[0]}>
+            <input
+              type="radio"
+              value={model[0]}
+              name="modelChoice"
+              checked={embeddingModelChoice === model[0]}
+              onChange={(e) => setEmbeddingModelChoice(e.target.value)}
+            />
+            <label>{model[1]}</label>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const displayModelResponse = () => {
+    if (modelResponse) {
+      return (
+        <div>
+          <p>
+            <h3>Model Response:</h3>
+            {modelResponse}
+          </p>
+        </div>
+      )
+    }
+  }
+
+  const displayRetrievedDocs = () => {
+    if (retrievedDocs.length > 0) {
+      return (
+        <div className="flex flex-col gap-4">
+          {retrievedDocs.map((doc, idx)  => (
+            <div key={idx} className="bg-gray-100 rounded-md">
+              <h4 className="font-bold">Doc {idx}:</h4>
+              <p>{doc.slice(0, 1000)}</p>
+              {/* Add expandable functionality here */}
+
+            </div>
+          ))}
+        </div>
+      )
+    }
+  }
+ 
   return (
     <main className="flex min-h-screen flex-col items-center gap-4 p-24">
-      <div>
-        <h1 className="text-4xl font-bold">Embedding Playground</h1>
-      </div>
-      <div className="flex flex-col gap-2">
-        <label htmlFor="queryString">Your query:</label>
-        <input
-          type="text"
-          className="text-black rounded-md border border-black"
-          size={75}
-          name="queryString"
-          onChange={handleQueryChange}
-        />
-        <div className="ml-3 text-sm leading-6">
-          <label>
-          Generate an Answer (RAG)?
-          </label>
-          <input
-            type="checkbox"
-            className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
-            checked={generateAnswer}
-            onChange={handleCheckboxChange}
-          />
+      <div className="flex flex-col mx-auto">
+        <div id="title">
+          <h1 className="text-4xl font-bold">Embedding Playground</h1>
         </div>
-        <button
-          className="bg-primary text-teal-950 font-bold py-2 px-4 rounded"
-          onClick={runQuery}
-        >
-          Run Query
-        </button>
-        <p>{response}</p>
+        <div className="flex flex-col gap-2">
+          <label htmlFor="queryString">Your query:</label>
+          <input
+            type="text"
+            className="text-black rounded-md border border-black"
+            size={75}
+            name="queryString"
+            onChange={handleQueryChange}
+          />
+          <div className="ml-3 text-sm leading-6">
+            <label>Generate an Answer (RAG)?</label>
+            <input
+              type="checkbox"
+              className="h-4 w-4 rounded border-gray-300"
+              checked={generateAnswer}
+              onChange={handleCheckboxChange}
+            />
+          </div>
+          <div>
+            <p>Embedding models:</p>
+          {displayModelChoice()}
+          </div>
+          <button
+            className="bg-primary text-teal-950 font-bold py-2 px-4 rounded"
+            onClick={runQuery}
+          >
+            Run Query
+          </button>
+          </div>
+      </div>
+      <div>
+        {displayModelResponse()}
+        {displayRetrievedDocs()}
       </div>
     </main>
   );

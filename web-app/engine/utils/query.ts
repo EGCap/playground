@@ -12,6 +12,7 @@ export const handleQuery = async (queryText: string, generateAnswer: boolean = t
 
     const embeddingModel: EMBEDDING_MODEL = EMBEDDING_MODEL.OPEN_AI;
     const queryEmbedding = await getEmbedding(queryText, embeddingModel);
+
     if (queryEmbedding) {
         console.log("Fetching nearest documents...:", queryEmbedding, embeddingModel);
         try{
@@ -28,6 +29,7 @@ export const handleQuery = async (queryText: string, generateAnswer: boolean = t
             console.log(err);
         }
     }
+    
     console.log(documents);
 
     if (generateAnswer) {
