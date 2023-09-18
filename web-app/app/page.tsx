@@ -6,7 +6,8 @@ import { FormEvent, useState } from 'react'
 export default function Home() {
   const [shouldFetchDocs, setShouldFetchDocs] = useState<boolean>(false);
   const [embeddingModelChoice, setEmbeddingModelChoice] = useState<string | null>(null);
-  const [queryResponse, setQueryResponse] = useState<string>('');
+  const [modelResponse, setModelResponse] = useState<string>('');
+  const [retrievedDocs, setRetrievedDocs] = useState<string[]>([]);
 
   async function runQuery(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -24,7 +25,8 @@ export default function Home() {
     })
  
     const data = await response.json()
-    setQueryResponse(data.result)
+    setModelResponse(data.modelResponse)
+    setRetrievedDocs(data.retrievedDocs)
   }
 
   const handleCheckboxChange = () => {
@@ -58,6 +60,32 @@ export default function Home() {
       )
     }
   }
+  
+  const displayModelResponse = () => {
+    if (modelResponse) {
+      return (
+        <p>
+          <h3>Model Response:</h3>
+          {modelResponse}
+        </p>
+      )
+    }
+  }
+
+  const displayRetrievedDocs = () => {
+    if (retrievedDocs.length > 0) {
+      return (
+        <div>
+          {retrievedDocs.map((doc, idx)  => (
+            <div key={idx}>
+              <h4>Doc {idx}:</h4>
+              <p>{doc}</p>
+            </div>
+          ))}
+        </div>
+      )
+    }
+  }
  
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
@@ -72,7 +100,8 @@ export default function Home() {
         {displayModelChoice()}
         <button type="submit">Run Query</button>
       </form>
-      <p>{queryResponse}</p>
+      {displayModelResponse()}
+      {displayRetrievedDocs()}
     </main>
   )
 }
