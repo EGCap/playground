@@ -43,11 +43,10 @@ export default function Home() {
       return (
         <div>
           {modelsWithUserFriendlyNames.map(model => (
-            <div>
+            <div key={model[0]}>
             <input
               type="radio"
               value={model[0]}
-              key={model[0]}
               name="modelChoice"
               checked={embeddingModelChoice === model[0]}
               onChange={e => setEmbeddingModelChoice(e.target.value)}
