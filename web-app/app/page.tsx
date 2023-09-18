@@ -1,22 +1,20 @@
 "use client"
 
-import { FormEvent, useState } from 'react'
+import { FormEvent, MouseEventHandler, useState } from 'react'
 
 export default function Home() {
   const [response, setResponse] = useState<string>('');
   const [shouldFetchDocs, setShouldFetchDocs] = useState<boolean>(false);
+  const [query, setQuery] = useState<string>('');
 
-  async function runQuery(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
- 
-    const formData = new FormData(event.currentTarget)
+  async function runQuery() {
     const response = await fetch('/api/query', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        query: formData.get('queryString'),
+        query: query,
         fetchDocs: shouldFetchDocs,
       })
     })
@@ -28,18 +26,22 @@ export default function Home() {
   const handleCheckboxChange = () => {
     setShouldFetchDocs(!shouldFetchDocs);
   }
+  
+  const handleQueryChange = (event: FormEvent<HTMLInputElement>) => {
+    setQuery(event.currentTarget.value);
+  }
  
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <form onSubmit={runQuery}>
-        <input type="text"  className=" text-black" size={75} name="queryString" />
+      <form>
+        <input type="text"  className=" text-black" size={75} name="queryString"  onChange={handleQueryChange}/>
         <div/>
         <label>
           <input type="checkbox" checked={shouldFetchDocs} onChange={handleCheckboxChange}/>
           Fetch Related Documents?
         </label>
         <div/>
-        <button type="submit">Run Query</button>
+        <button onClick={runQuery}>Run Query</button>
       </form>
       <p>{response}</p>
     </main>
