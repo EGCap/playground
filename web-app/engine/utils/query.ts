@@ -6,14 +6,15 @@ import { getChatModelResponse } from "./inference";
 const DEFAULT_THRESHOLD: number = 0.7
 const DEFAULT_MAX_MATCHES: number = 5
 
-export const handleQuery = async (queryText: string, fetchDocuments: boolean = true) => {
-    let documents: string[] = []
+export const handleQuery = async (queryText: string, generateAnswer: boolean = true) => {
+    let documents: string[] = [];
+    let modelResponse: string = "";
 
-    if (fetchDocuments) {
-        const embeddingModel: EMBEDDING_MODEL = EMBEDDING_MODEL.OPEN_AI;
-        const queryEmbedding = await getEmbedding(queryText, embeddingModel);
-
-        if (queryEmbedding) {
+    const embeddingModel: EMBEDDING_MODEL = EMBEDDING_MODEL.OPEN_AI;
+    const queryEmbedding = await getEmbedding(queryText, embeddingModel);
+    if (queryEmbedding) {
+        console.log("Fetching nearest documents...:", queryEmbedding, embeddingModel);
+        try{
             documents = await fetchNearestDocuments(
                 queryEmbedding,
                 DATASET.WIKIPEDIA,
@@ -23,10 +24,16 @@ export const handleQuery = async (queryText: string, fetchDocuments: boolean = t
                 DATABASE.SUPABASE
             );
         }
+        catch(err){
+            console.log(err);
+        }
     }
+    console.log(documents);
 
-    const languageModel: LANGUAGE_MODEL = LANGUAGE_MODEL.GPT_3_5
-    const modelResponse = await getChatModelResponse(queryText, documents, languageModel);
+    if (generateAnswer) {
+        const languageModel: LANGUAGE_MODEL = LANGUAGE_MODEL.GPT_3_5
+        modelResponse = await getChatModelResponse(queryText, documents, languageModel);
+    }
 
     return {
         query: queryText,

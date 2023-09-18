@@ -21,8 +21,10 @@ export const fetchNearestDocuments = async (
     maxMatches: number,
     database: DATABASE
 ) => {
+    console.log("made it into fetchNearestDocuments");
     switch (database as DATABASE) {
         case DATABASE.SUPABASE:
+            console.log("in the switch")
             return await getNearestDocumentsFromSupabase(queryEmbedding, dataset, embeddingModel, threshold, maxMatches);
     }
 }
