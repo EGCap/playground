@@ -1,6 +1,6 @@
 import fs from 'fs/promises';
 
-import { WikiTextChunk } from '../types';
+import { TextChunk } from '../types';
 
 export const parseData = async (
     filename: string, startLine: number, endLine: number
@@ -9,18 +9,25 @@ export const parseData = async (
     let rawdata = await fs.readFile(filename, 'utf-8');
     let lines = rawdata.split('\n');
 
-    let data = [] as WikiTextChunk[];
+    let chunks = [] as TextChunk[];
     for (let i = startLine; i <= endLine; i++) {
         let line = lines[i];
-        if (line.length > 0) {
+        if (line && line.length > 0) {
             try {
-                data.push(JSON.parse(line));
+                const parsedLine = JSON.parse(line);
+                const chunk = {
+                    text: parsedLine.value.text,
+                    chunkIndex: i,
+                    title: parsedLine.value.title,
+                    url: parsedLine.value.url,
+                } as TextChunk;
+                chunks.push(chunk);
             } catch (e) {
                 console.log(e);
             }
         }
     }
-    return data;
+    return chunks;
 }
 
 export const getChunkCount = async (filename: string) => {

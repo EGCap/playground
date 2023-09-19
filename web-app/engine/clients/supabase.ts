@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import {SUPABASE_URL, SUPABASE_SERVICE_KEY} from '../config'
-import { DATASET, EMBEDDING_MODEL, EmbeddedWikiTextChunk } from '../types';
+import { DATASET, EMBEDDING_MODEL, EmbeddedTextChunk } from '../types';
 import { getEmbeddingDimensionForModel } from '../utils/embedding';
 
 type SupabaseDocument = {
@@ -13,7 +13,7 @@ const supabaseClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 const SUPABASE_EMBEDDINGS_TABLE_NAME: string = 'embeddings'
 
 export const uploadEmbeddingsToSupabase = async (
-    embeddedChunks: EmbeddedWikiTextChunk[],
+    embeddedTextChunks: EmbeddedTextChunk[],
     dataset: DATASET,
     embeddingModel: EMBEDDING_MODEL,
 ) => {
@@ -21,13 +21,13 @@ export const uploadEmbeddingsToSupabase = async (
     const embeddingDim = getEmbeddingDimensionForModel(embeddingModel)
     const embeddingKey: string = `embedding_${embeddingDim}`
 
-    const uploadRows = embeddedChunks.map((embeddedChunk) => {
+    const uploadRows = embeddedTextChunks.map((embeddedTextChunk) => {
         return {
             'dataset': DATASET[dataset],
-            'chunk_index': embeddedChunk.chunkIndex,
-            'document': embeddedChunk.textChunk.value.text,
+            'chunk_index': embeddedTextChunk.textChunk.chunkIndex,
+            'document': embeddedTextChunk.textChunk.text,
             'embedding_model': EMBEDDING_MODEL[embeddingModel],
-            [embeddingKey]: embeddedChunk.embedding,
+            [embeddingKey]: embeddedTextChunk.embedding,
         }
     });
 

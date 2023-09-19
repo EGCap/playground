@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import { getChunkCount, parseData } from '../web-app/engine/utils/data';
-import { getEmbedding } from '../web-app/engine/utils/embedding';
-import { DATABASE, DATASET, EMBEDDING_MODEL, EmbeddedWikiTextChunk } from '../web-app/engine/types';
+import { embedTextChunks, getEmbedding } from '../web-app/engine/utils/embedding';
+import { DATABASE, DATASET, EMBEDDING_MODEL, EmbeddedTextChunk, TextChunk } from '../web-app/engine/types';
 import { uploadEmbeddings } from '../web-app/engine/utils/database';
 import { Command } from 'commander';
 
@@ -54,24 +54,15 @@ async function main() {
     for(let startBatchIndex = startChunkIndex; startBatchIndex <= endChunkIndex; startBatchIndex += batchSize) {
         // Load chunk of textchunks
         const endBatchIndex = Math.min(startBatchIndex + batchSize - 1, endChunkIndex);
-        const textChunks = await parseData(filename, startBatchIndex, endBatchIndex);
+        const textChunks: TextChunk[] = await parseData(filename, startBatchIndex, endBatchIndex);
         console.log("Loaded text chunks", textChunks.length);
         
         // Embeds the textchunks
         const embeddingStartTime = Date.now();
-        let completed = 0;
-        const embeddedChunks = await Promise.all(textChunks.map(async (textChunk, idx) => {
-            const embedding = await getEmbedding(textChunk.toEmbed, embeddingModel);
-            completed++;
+        const embeddedTextChunks = await embedTextChunks(textChunks, embeddingModel, false);
 
-            return {
-                textChunk: textChunk,
-                chunkIndex: startBatchIndex + idx,
-                embedding: embedding,
-            } as EmbeddedWikiTextChunk
-        }));
         // Ensure all promises succeeded
-        if (embeddedChunks.some((embeddedChunk) => !embeddedChunk.embedding)) {
+        if (embeddedTextChunks.some((embeddedTextChunk) => !embeddedTextChunk.embedding)) {
             console.error(`Some text chunks failed to embed: ${startBatchIndex} to ${endBatchIndex}`);
             return;
         } else {
@@ -80,7 +71,7 @@ async function main() {
 
         // Upload to database
         const uploadStartTime = Date.now();
-        const error = await uploadEmbeddings(embeddedChunks, dataset, embeddingModel, DATABASE.SUPABASE)
+        const error = await uploadEmbeddings(embeddedTextChunks, dataset, embeddingModel, DATABASE.SUPABASE)
         if (error) {
             console.error(`Upload failure: ${startBatchIndex} to ${endBatchIndex}`);
             console.error(error);

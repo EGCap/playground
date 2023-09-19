@@ -1,15 +1,12 @@
-export type WikiTextChunk = {
-    toEmbed: string,
-    value: {
-        title: string,
-        url: string,
-        text: string,
-    }
+export type TextChunk = {
+    text: string,
+    chunkIndex: number,
+    title: string | null,
+    url: string | null,
 }
 
-export type EmbeddedWikiTextChunk = {
-    textChunk: WikiTextChunk,
-    chunkIndex: number,
+export type EmbeddedTextChunk = {
+    textChunk: TextChunk,
     embedding: number[],
 }
 
