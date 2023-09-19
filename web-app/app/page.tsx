@@ -12,19 +12,31 @@ const modelsWithUserFriendlyNames = {
 };
 
 // Creates a dictionary of embedding models with all values set to false
-const initialEmbeddingChoices = Object.keys(modelsWithUserFriendlyNames).reduce((choices, key) => {
-  return { ...choices, [key]: true };
-}, {});
+const initialEmbeddingChoices = Object.keys(modelsWithUserFriendlyNames).reduce(
+  (choices, key) => {
+    return { ...choices, [key]: true };
+  },
+  {}
+);
 
 export default function Home() {
   const [generateAnswer, setGenerateAnswer] = useState<boolean>(false);
   const [query, setQuery] = useState<string>("");
-  const [embeddingChoices, setEmbeddingChoices] = useState<{[key: string]: boolean}>(initialEmbeddingChoices);
+  const [embeddingChoices, setEmbeddingChoices] = useState<{
+    [key: string]: boolean;
+  }>(initialEmbeddingChoices);
   const [queryResponse, setQueryResponse] = useState<QueryResponse>();
-  
+  const [loading, setLoading] = useState<boolean>(false);
+
   const datasets = ["wikipedia", "reddit", "arxiv"];
 
   async function runQuery() {
+
+    if(!query) {
+      alert("Please enter a query");
+      return;
+    }
+    setLoading(true);
     const response = await fetch("/api/query", {
       method: "POST",
       headers: {
@@ -39,6 +51,7 @@ export default function Home() {
 
     const data = await response.json();
     setQueryResponse(data);
+    setLoading(false);
   }
 
   const handleCheckboxChange = () => {
@@ -58,10 +71,12 @@ export default function Home() {
               type="checkbox"
               name="modelChoice"
               checked={embeddingChoices[model]}
-              onChange={(e) => setEmbeddingChoices({
-                ...embeddingChoices,
-                [model]: e.target.checked,
-              })}
+              onChange={(e) =>
+                setEmbeddingChoices({
+                  ...embeddingChoices,
+                  [model]: e.target.checked,
+                })
+              }
             />
             <label>{model}</label>
           </div>
@@ -101,7 +116,33 @@ export default function Home() {
             className="bg-primary text-teal-950 font-bold py-2 px-4 rounded"
             onClick={runQuery}
           >
-            Run Query
+            {loading ? (
+              <div className="flex items-center justify-center">
+                <svg
+                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                Loading...
+              </div>
+            ) : (
+              <p>Run Query</p>
+            )}
           </button>
         </div>
       </div>
@@ -110,9 +151,7 @@ export default function Home() {
           queryResponse.data.map((querydata, idx) => {
             const chunks = querydata.documents.map((chunk, index) => {
               console.log(chunk);
-                return (
-                  <Chunk key={index} text={chunk.value} />
-                )
+              return <Chunk key={index} text={chunk.value} />;
             });
             return (
               <div className="flex flex-col flex-1" key={idx}>
@@ -120,11 +159,9 @@ export default function Home() {
                 <p>Embedding Model:{querydata.embeddingModel}</p>
                 <p>Answer:{querydata.answer.response}</p>
                 <p>Answer Model:{querydata.answer.model}</p>
-                <div className="flex flex-col gap-4 ">
-                  {chunks}
-                </div>
-                <div style={{ flex: 1 }}></div> {/* Add this div to fill the remaining space */}
-
+                <div className="flex flex-col gap-4 ">{chunks}</div>
+                <div style={{ flex: 1 }}></div>{" "}
+                {/* Add this div to fill the remaining space */}
               </div>
             );
           })}
