@@ -46,11 +46,6 @@ export const getNearestDocumentsFromSupabase = async (
   threshold: number,
   maxMatches: number
 ) => {
-  console.log("queryEmbedding", queryEmbedding);
-  console.log("dataset", dataset);
-  console.log("embeddingModel", embeddingModel);
-  console.log("threshold", threshold);
-  console.log("maxMatches", maxMatches);
   if (getEmbeddingDimensionForModel(embeddingModel) === 768) {
     const { data: results, error } = await supabaseClient.rpc(
       "nearest_documents_768",

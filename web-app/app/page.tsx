@@ -150,7 +150,6 @@ export default function Home() {
         {queryResponse &&
           queryResponse.data.map((querydata, idx) => {
             const chunks = querydata.documents.map((chunk, index) => {
-              console.log(chunk);
               return <Chunk key={index} text={chunk.value} />;
             });
             return (
@@ -160,8 +159,6 @@ export default function Home() {
                 <p>Answer:{querydata.answer.response}</p>
                 <p>Answer Model:{querydata.answer.model}</p>
                 <div className="flex flex-col gap-4 ">{chunks}</div>
-                <div style={{ flex: 1 }}></div>{" "}
-                {/* Add this div to fill the remaining space */}
               </div>
             );
           })}

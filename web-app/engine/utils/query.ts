@@ -21,13 +21,9 @@ export const handleQuery = async (
   let data: QueryData[] = [];
   let documents: string[] = [];
   let modelResponse: string = "";
-
-  console.log("starting embeddingModels", embeddingModels);
   
   await Promise.all(embeddingModels.map(async (embeddingModel) => {
     const queryEmbedding = await getEmbedding(queryText, embeddingModel);
-    console.log("queryEmbedding", queryEmbedding);
-
     if (queryEmbedding) {
       try {
         const fetchedDocuments = await fetchNearestDocuments(
@@ -57,7 +53,6 @@ export const handleQuery = async (
         value: doc,
       };
     });
-    console.log("responseDocuments", responseDocuments);
     data.push({
       answer: {
         model: LANGUAGE_MODEL.GPT_3_5,
@@ -73,8 +68,6 @@ export const handleQuery = async (
     query: queryText,
     data: data,
   } as QueryResponse;
-
-  console.log("response", response);
 
   return response;
 };
