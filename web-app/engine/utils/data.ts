@@ -16,7 +16,7 @@ export const parseData = async (
             try {
                 const parsedLine = JSON.parse(line);
                 const chunk = {
-                    text: parsedLine.value.text,
+                    text: parsedLine.value.text || parsedLine.toEmbed,
                     chunkIndex: i,
                     title: parsedLine.value.title,
                     url: parsedLine.value.url,

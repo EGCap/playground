@@ -6,16 +6,20 @@ const replicateClient = new Replicate({
 });
 
 export const getImageBindEmbeddings = async (inputStrings: string[]) => {
-    const response = await replicateClient.run(
-        "daanelson/imagebind:0383f62e173dc821ec52663ed22a076d9c970549c209666ac3db181618b7a304",
-        {
-            input: {
-                text_input: inputStrings,
-                modality: 'text',
+    const embeddings: number[][] = Array(inputStrings.length).fill([]);
+    await Promise.all(inputStrings.map(async (inputString, idx) => {
+        const apiResponse = await replicateClient.run(
+            "daanelson/imagebind:0383f62e173dc821ec52663ed22a076d9c970549c209666ac3db181618b7a304",
+            {
+                input: {
+                    text_input: inputString,
+                    modality: 'text',
+                }
             }
-        }
-    );
-    return response as number[][];
+        );
+        embeddings[idx] = apiResponse as number[];
+    }))
+    return embeddings;
 }
 
 type MPNETEmbeddingResponseSchema = {
