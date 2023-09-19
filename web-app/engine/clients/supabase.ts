@@ -1,7 +1,7 @@
-import { createClient } from "@supabase/supabase-js";
-import { SUPABASE_URL, SUPABASE_SERVICE_KEY } from "../config";
-import { DATASET, EMBEDDING_MODEL, EmbeddedWikiTextChunk } from "../types";
-import { getEmbeddingDimensionForModel } from "../utils/embedding";
+import { createClient } from '@supabase/supabase-js';
+import {SUPABASE_URL, SUPABASE_SERVICE_KEY} from '../config'
+import { DATASET, EMBEDDING_MODEL, EmbeddedTextChunk } from '../types';
+import { getEmbeddingDimensionForModel } from '../utils/embedding';
 
 type SupabaseDocument = {
   id: number;
@@ -20,20 +20,14 @@ export const uploadEmbeddingsToSupabase = async (
   const embeddingDim = getEmbeddingDimensionForModel(embeddingModel);
   const embeddingKey: string = `embedding_${embeddingDim}`;
 
-  const uploadRows = embeddedChunks.map((embeddedChunk) => {
-    return {
-      dataset: DATASET[dataset],
-      chunk_index: embeddedChunk.chunkIndex,
-      document: embeddedChunk.textChunk.value.text,
-      embedding_model: EMBEDDING_MODEL[embeddingModel],
-      [embeddingKey]: embeddedChunk.embedding,
-    };
-  });
-
-  const { error } = await supabaseClient
-    .from(SUPABASE_EMBEDDINGS_TABLE_NAME)
-    .upsert(uploadRows, {
-      onConflict: "dataset, chunk_index, embedding_model",
+    const uploadRows = embeddedTextChunks.map((embeddedTextChunk) => {
+        return {
+            'dataset': DATASET[dataset],
+            'chunk_index': embeddedTextChunk.textChunk.chunkIndex,
+            'document': embeddedTextChunk.textChunk.document.rawText,
+            'embedding_model': EMBEDDING_MODEL[embeddingModel],
+            [embeddingKey]: embeddedTextChunk.embedding,
+        }
     });
 
   return error;

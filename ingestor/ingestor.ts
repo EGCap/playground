@@ -1,78 +1,83 @@
 import dotenv from 'dotenv';
 import { getChunkCount, parseData } from '../web-app/engine/utils/data';
-import { getEmbedding } from '../web-app/engine/utils/embedding';
-import { DATABASE, DATASET, EMBEDDING_MODEL, EmbeddedWikiTextChunk } from '../web-app/engine/types';
+import { embedTextChunks, getEmbedding } from '../web-app/engine/utils/embedding';
+import { DATABASE, DATASET, EMBEDDING_MODEL, EmbeddedTextChunk, TextChunk } from '../web-app/engine/types';
 import { uploadEmbeddings } from '../web-app/engine/utils/database';
+import { Command } from 'commander';
 
 dotenv.config();
 
 async function main() {
-    const args = process.argv.slice(2);
-    const filename = args[0];
-    const datasetName = args[1];
-    const embeddingModelName = args[2];
+    const program = new Command();
+    program
+        .name('ingestor')
+        .description('CLI to embed and upload data');
 
-    if (!filename) {
-        console.error("Please provide a JSONL filename");
-        return;
-    }
+    program
+        .argument('<filename>', 'Path to file containing raw data to embed')
+        .argument('<datasetName>', 'Name of dataset to embed')
+        .argument('<embeddingModelName>', 'Embedding model to use')
+        .option('-s, --start <startChunkIndex>', 'Index of first chunk to embed', '0')
+        .option('-n, --chunks <numChunks>', 'Number of chunks to embed')
+        .option('-b, --batchsize <batchSize>', 'Number of chunks per upload batch', '100');
+    
+    program.parse();
 
-    if (!datasetName) {
-        console.error("Please provide a dataset name");
-        return;
-    }
+    const filename: string = program.args[0];
+    const datasetName: string = program.args[1];
+    const embeddingModelName: string = program.args[2];
+
     if (!Object.values(DATASET).includes(datasetName as DATASET)) {
         console.log("Please provide a valid dataset name");
         return;
     }
     const dataset: DATASET = DATASET[datasetName as keyof typeof DATASET];
 
-    if (!embeddingModelName) {
-        console.error("Please provide an embedding model to use");
-        return;
-    }
     if (!Object.values(EMBEDDING_MODEL).includes(embeddingModelName as EMBEDDING_MODEL)) {
         console.log("Please provide a valid dataset name");
         return;
     }
     const embeddingModel: EMBEDDING_MODEL = EMBEDDING_MODEL[embeddingModelName as keyof typeof EMBEDDING_MODEL];
+    
+    const options = program.opts();
+    const startChunkIndex: number = Number(options.start);
+    const batchSize: number = Number(options.batchsize);
+    let endChunkIndex: number = 0;
+    if (options.chunks) {
+        const numChunks: number = Number(options.chunks);
+        endChunkIndex = startChunkIndex + numChunks - 1;
+    } else {
+        endChunkIndex = await getChunkCount(filename);
+    }
+    console.log(`Uploading data from ${startChunkIndex} to ${endChunkIndex} in batches of ${batchSize}`)
 
-    // Reads a filename of a JSONL with textchunks
-    const chunkCount = await getChunkCount(filename);
-    const batchSize = 100;
-
-    for(let i = 0; i < chunkCount; i += batchSize) {
+    for(let startBatchIndex = startChunkIndex; startBatchIndex <= endChunkIndex; startBatchIndex += batchSize) {
         // Load chunk of textchunks
-        const textChunks = await parseData(filename, i, i + batchSize)
+        const endBatchIndex = Math.min(startBatchIndex + batchSize - 1, endChunkIndex);
+        const textChunks: TextChunk[] = await parseData(filename, startBatchIndex, endBatchIndex);
         console.log("Loaded text chunks", textChunks.length);
         
         // Embeds the textchunks
-        let completed = 0;
-        const embeddedChunks = await Promise.all(textChunks.map(async (textChunk, idx) => {
-            const embedding = await getEmbedding(textChunk.toEmbed, embeddingModel);
-            completed++;
-            console.log(`Completed ${completed}`);
-
-            return {
-                textChunk: textChunk,
-                chunkIndex: i + idx,
-                embedding: embedding,
-            } as EmbeddedWikiTextChunk
-        }));
+        const embeddingStartTime = Date.now();
+        const embeddedTextChunks = await embedTextChunks(textChunks, embeddingModel, false);
 
         // Ensure all promises succeeded
-        if (embeddedChunks.some((embeddedChunk) => !embeddedChunk.embedding)) {
-            console.error("Some text chunks failed to embed", i, "to", i + batchSize);
+        if (embeddedTextChunks.some((embeddedTextChunk) => !embeddedTextChunk.embedding)) {
+            console.error(`Some text chunks failed to embed: ${startBatchIndex} to ${endBatchIndex}`);
             return;
+        } else {
+            console.log(`Embedding complete in ${((Date.now() - embeddingStartTime) / 1000).toFixed(2)} seconds`);
         }
 
         // Upload to database
-        const error = await uploadEmbeddings(embeddedChunks, dataset, embeddingModel, DATABASE.SUPABASE)
+        const uploadStartTime = Date.now();
+        const error = await uploadEmbeddings(embeddedTextChunks, dataset, embeddingModel, DATABASE.SUPABASE)
         if (error) {
-            console.error("Upload error:", i, "to", i + batchSize);
+            console.error(`Upload failure: ${startBatchIndex} to ${endBatchIndex}`);
             console.error(error);
+            return;
         } else {
-            console.log("Upload chunk complete:", i, "to", i + batchSize);
+            console.log(`Upload: ${startBatchIndex} to ${endBatchIndex} complete in ${((Date.now() - uploadStartTime) / 1000).toFixed(2)} seconds`);
         }
     }
 }

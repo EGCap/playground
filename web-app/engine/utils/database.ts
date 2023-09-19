@@ -1,8 +1,8 @@
 import { getNearestDocumentsFromSupabase, uploadEmbeddingsToSupabase } from "../clients/supabase";
-import { EmbeddedWikiTextChunk, DATABASE, EMBEDDING_MODEL, DATASET } from "../types";
+import { EmbeddedTextChunk, DATABASE, EMBEDDING_MODEL, DATASET } from "../types";
 
 export const uploadEmbeddings = async (
-    embeddedChunks: EmbeddedWikiTextChunk[],
+    embeddedChunks: EmbeddedTextChunk[],
     dataset: DATASET,
     embeddingModel: EMBEDDING_MODEL,
     database: DATABASE
