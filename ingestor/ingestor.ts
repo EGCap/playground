@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 import { getChunkCount, parseData } from '../web-app/engine/utils/data';
-import { embedTextChunks, getEmbedding } from '../web-app/engine/utils/embedding';
+import { embedTextChunks, getEmbedding, getEmbeddingDimensionForModel } from '../web-app/engine/utils/embedding';
 import { DATABASE, DATASET, EMBEDDING_MODEL, EmbeddedTextChunk, TextChunk } from '../web-app/engine/types';
 import { uploadEmbeddings } from '../web-app/engine/utils/database';
 import { Command } from 'commander';
@@ -59,10 +59,11 @@ async function main() {
         
         // Embeds the textchunks
         const embeddingStartTime = Date.now();
-        const embeddedTextChunks = await embedTextChunks(textChunks, embeddingModel, false);
+        const embeddedTextChunks: EmbeddedTextChunk[] = await embedTextChunks(textChunks, embeddingModel, false);
 
-        // Ensure all promises succeeded
-        if (embeddedTextChunks.some((embeddedTextChunk) => !embeddedTextChunk.embedding)) {
+        // Ensure all embeddings succeeded
+        const expectedDim: number = getEmbeddingDimensionForModel(embeddingModel);
+        if (embeddedTextChunks.some((embeddedTextChunk) => !embeddedTextChunk.embedding || embeddedTextChunk.embedding.length != expectedDim)) {
             console.error(`Some text chunks failed to embed: ${startBatchIndex} to ${endBatchIndex}`);
             return;
         } else {
