@@ -58,6 +58,7 @@ async function main() {
         console.log("Loaded text chunks", textChunks.length);
         
         // Embeds the textchunks
+        const embeddingStartTime = Date.now();
         let completed = 0;
         const embeddedChunks = await Promise.all(textChunks.map(async (textChunk, idx) => {
             const embedding = await getEmbedding(textChunk.toEmbed, embeddingModel);
@@ -69,20 +70,23 @@ async function main() {
                 embedding: embedding,
             } as EmbeddedWikiTextChunk
         }));
-
         // Ensure all promises succeeded
         if (embeddedChunks.some((embeddedChunk) => !embeddedChunk.embedding)) {
-            console.error("Some text chunks failed to embed", startBatchIndex, "to", endBatchIndex);
+            console.error(`Some text chunks failed to embed: ${startBatchIndex} to ${endBatchIndex}`);
             return;
+        } else {
+            console.log(`Embedding complete in ${((Date.now() - embeddingStartTime) / 1000).toFixed(2)} seconds`);
         }
 
         // Upload to database
+        const uploadStartTime = Date.now();
         const error = await uploadEmbeddings(embeddedChunks, dataset, embeddingModel, DATABASE.SUPABASE)
         if (error) {
-            console.error("Upload error:", startBatchIndex, "to", endBatchIndex);
+            console.error(`Upload failure: ${startBatchIndex} to ${endBatchIndex}`);
             console.error(error);
+            return;
         } else {
-            console.log("Upload chunk complete:", startBatchIndex, "to", endBatchIndex);
+            console.log(`Upload: ${startBatchIndex} to ${endBatchIndex} complete in ${((Date.now() - uploadStartTime) / 1000).toFixed(2)} seconds`);
         }
     }
 }

@@ -3,6 +3,7 @@ import { OPENAI_API_KEY } from '../config';
 import { encodingForModel } from "js-tiktoken";
 
 const openaiClient = new OpenAI({apiKey: OPENAI_API_KEY});
+const encoder = encodingForModel("gpt-3.5-turbo");
 
 export const getOpenAIEmbedding = async (input: string) => {
     const response = await openaiClient.embeddings.create({
@@ -20,9 +21,6 @@ If the answer cannot be found in the documents, write "I could not find an answe
 export const getOpenAIChatCompletion = async (query: string, documents: string[]) => {
     let prompt: string = ''
     if (documents.length > 0) {
-
-        const encoder = encodingForModel("gpt-3.5-turbo");
-
         prompt = PROMPT_HEADER
         const questionText: string = `\n\nQuestion: ${query}`
         let tokenBudget = MAX_TOKENS - encoder.encode(prompt).length - encoder.encode(questionText).length - RESPONSE_TOKEN_BUDGET
