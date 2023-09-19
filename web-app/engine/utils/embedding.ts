@@ -51,7 +51,7 @@ export const embedTextChunks = async (
 ) => {
     if (batched) {
         const embeddings: number[][] = await getEmbeddingsBatch(
-            textChunks.map(textChunk => textChunk.text),
+            textChunks.map(textChunk => textChunk.textToEmbed),
             embeddingModel
         );
         
