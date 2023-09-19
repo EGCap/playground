@@ -48,7 +48,6 @@ export const getNearestDocumentsFromSupabase = async (
     threshold: number,
     maxMatches: number
 )  => {
-    console.log("Getting nearest documents from Supabase...");
     const { data: results, error } = await supabaseClient.rpc('nearest_documents', {
         query_embedding: queryEmbedding,
         query_dataset: DATASET[dataset],
@@ -56,12 +55,10 @@ export const getNearestDocumentsFromSupabase = async (
         similarity_threshold: threshold,
         max_matches: maxMatches,
     })
-    console.log("WE DID IT")
     if (error) {
         console.log("error:", error);
         throw error;
     }
-    console.log("results:", results);
 
     return results.map((result: SupabaseDocument) => result.document)
 }

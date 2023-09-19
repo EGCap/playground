@@ -28,7 +28,6 @@ export default function Home() {
     });
 
     const data = await response.json();
-    console.log("DATA:", data);
     setQueryResponse(data);
   }
 
@@ -63,37 +62,6 @@ export default function Home() {
       </div>
     );
   };
-
-  // const displayModelResponse = () => {
-  //   if (modelResponse) {
-  //     return (
-  //       <div>
-  //         <p>
-  //           <h3>Model Response:</h3>
-  //           {modelResponse}
-  //         </p>
-  //       </div>
-  //     )
-  // }
-  // }
-
-  // const displayRetrievedDocs = () => {
-  //   if (retrievedDocs.length > 0) {
-  //     return (
-  //       <div className="flex flex-col gap-4">
-  //         {retrievedDocs.map((doc, idx)  => (
-  //           <div key={idx} className="bg-gray-100 rounded-md">
-  //             <h4 className="font-bold">Doc {idx}:</h4>
-  //             <p>{doc.slice(0, 1000)}</p>
-  //             {/* Add expandable functionality here */}
-
-  //           </div>
-  //         ))}
-  //       </div>
-  //     )
-  //   }
-  // }
-
   return (
     <main className="flex min-h-screen flex-col items-center gap-4 p-24">
       <div className="flex flex-col mx-auto">
@@ -144,6 +112,8 @@ export default function Home() {
               <div className="" key={idx}>
                 <p>Query:{queryResponse.query}</p>
                 <p>Embedding Model:{querydata.embeddingModel}</p>
+                <p>Answer:{querydata.answer.response}</p>
+                <p>Answer Model:{querydata.answer.model}</p>
                 {chunks}
               </div>
             );

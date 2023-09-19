@@ -14,7 +14,6 @@ export const handleQuery = async (queryText: string, embeddingModel: EMBEDDING_M
     const queryEmbedding = await getEmbedding(queryText, embeddingModel);
 
     if (queryEmbedding) {
-        console.log("Fetching nearest documents...:", queryEmbedding, embeddingModel);
         try{
             documents = await fetchNearestDocuments(
                 queryEmbedding,
@@ -52,8 +51,6 @@ export const handleQuery = async (queryText: string, embeddingModel: EMBEDDING_M
         query: queryText,
         data: data,
     } as QueryResponse;
-
-    console.log(response);
 
     return response;
 }
