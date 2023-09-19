@@ -1,7 +1,7 @@
-import { createClient } from '@supabase/supabase-js';
-import {SUPABASE_URL, SUPABASE_SERVICE_KEY} from '../config'
-import { DATASET, EMBEDDING_MODEL, EmbeddedTextChunk } from '../types';
-import { getEmbeddingDimensionForModel } from '../utils/embedding';
+import { createClient } from "@supabase/supabase-js";
+import { SUPABASE_URL, SUPABASE_SERVICE_KEY } from "../config";
+import { DATASET, EMBEDDING_MODEL, EmbeddedTextChunk } from "../types";
+import { getEmbeddingDimensionForModel } from "../utils/embedding";
 
 type SupabaseDocument = {
   id: number;
@@ -12,7 +12,7 @@ const supabaseClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 const SUPABASE_EMBEDDINGS_TABLE_NAME: string = "embeddings";
 
 export const uploadEmbeddingsToSupabase = async (
-  embeddedChunks: EmbeddedWikiTextChunk[],
+  embeddedTextChunks: EmbeddedTextChunk[],
   dataset: DATASET,
   embeddingModel: EMBEDDING_MODEL
 ) => {
@@ -20,14 +20,20 @@ export const uploadEmbeddingsToSupabase = async (
   const embeddingDim = getEmbeddingDimensionForModel(embeddingModel);
   const embeddingKey: string = `embedding_${embeddingDim}`;
 
-    const uploadRows = embeddedTextChunks.map((embeddedTextChunk) => {
-        return {
-            'dataset': DATASET[dataset],
-            'chunk_index': embeddedTextChunk.textChunk.chunkIndex,
-            'document': embeddedTextChunk.textChunk.document.rawText,
-            'embedding_model': EMBEDDING_MODEL[embeddingModel],
-            [embeddingKey]: embeddedTextChunk.embedding,
-        }
+  const uploadRows = embeddedTextChunks.map((embeddedTextChunk) => {
+    return {
+      dataset: DATASET[dataset],
+      chunk_index: embeddedTextChunk.textChunk.chunkIndex,
+      document: embeddedTextChunk.textChunk.document.rawText,
+      embedding_model: EMBEDDING_MODEL[embeddingModel],
+      [embeddingKey]: embeddedTextChunk.embedding,
+    };
+  });
+
+  const { error } = await supabaseClient
+    .from(SUPABASE_EMBEDDINGS_TABLE_NAME)
+    .upsert(uploadRows, {
+      onConflict: "dataset, chunk_index, embedding_model",
     });
 
   return error;
