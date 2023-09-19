@@ -44,7 +44,7 @@ export const embedTextChunks = async (
         return [];
     } else {
         const embeddedChunks: EmbeddedTextChunk[] = await Promise.all(textChunks.map(async textChunk => {
-            const embedding = await getEmbedding(textChunk.text, embeddingModel);
+            const embedding = await getEmbedding(textChunk.textToEmbed, embeddingModel);
             return {
                 textChunk: textChunk,
                 embedding: embedding,
