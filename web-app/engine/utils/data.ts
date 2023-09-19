@@ -16,10 +16,17 @@ export const parseData = async (
             try {
                 const parsedLine = JSON.parse(line);
                 const chunk = {
+<<<<<<< HEAD
                     text: parsedLine.value.text || parsedLine.toEmbed,
+=======
+                    textToEmbed: parsedLine.toEmbed,
+>>>>>>> main
                     chunkIndex: i,
-                    title: parsedLine.value.title,
-                    url: parsedLine.value.url,
+                    document: {
+                        rawText: parsedLine.value.text,
+                        title: parsedLine.value.title,
+                        url: parsedLine.value.url,
+                    }
                 } as TextChunk;
                 chunks.push(chunk);
             } catch (e) {

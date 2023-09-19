@@ -1,8 +1,11 @@
 export type TextChunk = {
-    text: string,
+    textToEmbed: string,
     chunkIndex: number,
-    title: string | null,
-    url: string | null,
+    document: {
+        rawText: string,
+        title: string | null,
+        url: string | null,
+    }
 }
 
 export type EmbeddedTextChunk = {

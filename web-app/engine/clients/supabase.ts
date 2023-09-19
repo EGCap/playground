@@ -25,7 +25,7 @@ export const uploadEmbeddingsToSupabase = async (
         return {
             'dataset': DATASET[dataset],
             'chunk_index': embeddedTextChunk.textChunk.chunkIndex,
-            'document': embeddedTextChunk.textChunk.text,
+            'document': embeddedTextChunk.textChunk.document.rawText,
             'embedding_model': EMBEDDING_MODEL[embeddingModel],
             [embeddingKey]: embeddedTextChunk.embedding,
         }
