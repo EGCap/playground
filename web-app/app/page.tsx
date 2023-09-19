@@ -1,6 +1,6 @@
 "use client";
 
-import { EMBEDDING_MODEL } from "@/engine/types";
+import { EMBEDDING_MODEL, QueryResponse } from "@/engine/types";
 import { FormEvent, MouseEventHandler, useState } from "react";
 
 export default function Home() {
@@ -9,8 +9,7 @@ export default function Home() {
   const [embeddingModelChoice, setEmbeddingModelChoice] = useState<
     string | null
   >(null);
-  const [modelResponse, setModelResponse] = useState<string>("");
-  const [retrievedDocs, setRetrievedDocs] = useState<string[]>([]);
+  const [queryResponse, setQueryResponse] = useState<QueryResponse>();
 
   const datasets = ["wikipedia", "reddit", "arxiv"];
   const embeddingModels = ["ada-002", "ada-003", "ada-004", "ada-005"];
@@ -29,8 +28,8 @@ export default function Home() {
     });
 
     const data = await response.json();
-    setModelResponse(data.modelResponse);
-    setRetrievedDocs(data.retrievedDocs);
+    console.log("DATA:", data);
+    setQueryResponse(data);
   }
 
   const handleCheckboxChange = () => {
@@ -65,36 +64,36 @@ export default function Home() {
     );
   };
 
-  const displayModelResponse = () => {
-    if (modelResponse) {
-      return (
-        <div>
-          <p>
-            <h3>Model Response:</h3>
-            {modelResponse}
-          </p>
-        </div>
-      )
-    }
-  }
+  // const displayModelResponse = () => {
+  //   if (modelResponse) {
+  //     return (
+  //       <div>
+  //         <p>
+  //           <h3>Model Response:</h3>
+  //           {modelResponse}
+  //         </p>
+  //       </div>
+  //     )
+  // }
+  // }
 
-  const displayRetrievedDocs = () => {
-    if (retrievedDocs.length > 0) {
-      return (
-        <div className="flex flex-col gap-4">
-          {retrievedDocs.map((doc, idx)  => (
-            <div key={idx} className="bg-gray-100 rounded-md">
-              <h4 className="font-bold">Doc {idx}:</h4>
-              <p>{doc.slice(0, 1000)}</p>
-              {/* Add expandable functionality here */}
+  // const displayRetrievedDocs = () => {
+  //   if (retrievedDocs.length > 0) {
+  //     return (
+  //       <div className="flex flex-col gap-4">
+  //         {retrievedDocs.map((doc, idx)  => (
+  //           <div key={idx} className="bg-gray-100 rounded-md">
+  //             <h4 className="font-bold">Doc {idx}:</h4>
+  //             <p>{doc.slice(0, 1000)}</p>
+  //             {/* Add expandable functionality here */}
 
-            </div>
-          ))}
-        </div>
-      )
-    }
-  }
- 
+  //           </div>
+  //         ))}
+  //       </div>
+  //     )
+  //   }
+  // }
+
   return (
     <main className="flex min-h-screen flex-col items-center gap-4 p-24">
       <div className="flex flex-col mx-auto">
@@ -121,7 +120,7 @@ export default function Home() {
           </div>
           <div>
             <p>Embedding models:</p>
-          {displayModelChoice()}
+            {displayModelChoice()}
           </div>
           <button
             className="bg-primary text-teal-950 font-bold py-2 px-4 rounded"
@@ -129,11 +128,26 @@ export default function Home() {
           >
             Run Query
           </button>
-          </div>
+        </div>
       </div>
       <div>
-        {displayModelResponse()}
-        {displayRetrievedDocs()}
+        {queryResponse &&
+          queryResponse.data.map((querydata, idx) => {
+            const chunks = querydata.documents.map((chunk) => {
+              return (
+                <>
+                  <p>{chunk.value}</p>
+                </>
+              );
+            });
+            return (
+              <div className="" key={idx}>
+                <p>Query:{queryResponse.query}</p>
+                <p>Embedding Model:{querydata.embeddingModel}</p>
+                {chunks}
+              </div>
+            );
+          })}
       </div>
     </main>
   );

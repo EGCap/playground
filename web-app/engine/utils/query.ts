@@ -1,4 +1,4 @@
-import { DATABASE, DATASET, EMBEDDING_MODEL, LANGUAGE_MODEL, QueryResponse } from "../types";
+import { DATABASE, DATASET, EMBEDDING_MODEL, LANGUAGE_MODEL, QueryData, QueryResponse } from "../types";
 import { fetchNearestDocuments } from "./database";
 import { getEmbedding } from "./embedding";
 import { getChatModelResponse } from "./inference";
@@ -6,11 +6,11 @@ import { getChatModelResponse } from "./inference";
 const DEFAULT_THRESHOLD: number = 0.7
 const DEFAULT_MAX_MATCHES: number = 5
 
-export const handleQuery = async (queryText: string, generateAnswer: boolean = true) => {
+export const handleQuery = async (queryText: string, embeddingModel: EMBEDDING_MODEL, generateAnswer: boolean = true) => {
+    let data: QueryData[] = [];
     let documents: string[] = [];
     let modelResponse: string = "";
 
-    const embeddingModel: EMBEDDING_MODEL = EMBEDDING_MODEL.OPEN_AI;
     const queryEmbedding = await getEmbedding(queryText, embeddingModel);
 
     if (queryEmbedding) {
@@ -30,16 +30,30 @@ export const handleQuery = async (queryText: string, generateAnswer: boolean = t
         }
     }
     
-    console.log(documents);
-
     if (generateAnswer) {
         const languageModel: LANGUAGE_MODEL = LANGUAGE_MODEL.GPT_3_5
         modelResponse = await getChatModelResponse(queryText, documents, languageModel);
     }
 
-    return {
+    data.push({
+        answer: {
+            model: LANGUAGE_MODEL.GPT_3_5,
+            response: modelResponse,
+        },
+        embeddingModel: embeddingModel,
+        documents: documents.map((doc) => {
+            return {
+                value: doc,
+            }
+        })
+    });
+    
+    const response = {
         query: queryText,
-        modelResponse: modelResponse,
-        retrievedDocuments: documents,
+        data: data,
     } as QueryResponse;
+
+    console.log(response);
+
+    return response;
 }
