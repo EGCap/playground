@@ -1,18 +1,28 @@
 "use client";
 
+import { Chunk } from "@/components/Chunk";
 import { EMBEDDING_MODEL, QueryResponse } from "@/engine/types";
 import { FormEvent, MouseEventHandler, useState } from "react";
+
+// Add additional embedding models to enable here
+const modelsWithUserFriendlyNames = {
+  [EMBEDDING_MODEL.OPEN_AI]: "text-ada-002",
+  [EMBEDDING_MODEL.IMAGEBIND]: "ImageBind",
+  [EMBEDDING_MODEL.MPNET_BASE_V2]: "mpnet-base-v2",
+};
+
+// Creates a dictionary of embedding models with all values set to false
+const initialEmbeddingChoices = Object.keys(modelsWithUserFriendlyNames).reduce((choices, key) => {
+  return { ...choices, [key]: true };
+}, {});
 
 export default function Home() {
   const [generateAnswer, setGenerateAnswer] = useState<boolean>(false);
   const [query, setQuery] = useState<string>("");
-  const [embeddingModelChoice, setEmbeddingModelChoice] = useState<
-    string | null
-  >(null);
+  const [embeddingChoices, setEmbeddingChoices] = useState<{[key: string]: boolean}>(initialEmbeddingChoices);
   const [queryResponse, setQueryResponse] = useState<QueryResponse>();
-
+  
   const datasets = ["wikipedia", "reddit", "arxiv"];
-  const embeddingModels = ["ada-002", "ada-003", "ada-004", "ada-005"];
 
   async function runQuery() {
     const response = await fetch("/api/query", {
@@ -23,7 +33,7 @@ export default function Home() {
       body: JSON.stringify({
         query: query,
         generateAnswer: generateAnswer,
-        modelToRetrieveDocs: embeddingModelChoice,
+        modelsToRetrieveDocs: embeddingChoices,
       }),
     });
 
@@ -40,23 +50,20 @@ export default function Home() {
   };
 
   const displayModelChoice = () => {
-    const modelsWithUserFriendlyNames = [
-      [EMBEDDING_MODEL.OPEN_AI, "text-ada-002"],
-      [EMBEDDING_MODEL.IMAGEBIND, "ImageBind"],
-      [EMBEDDING_MODEL.MPNET_BASE_V2, "mpnet-base-v2"],
-    ];
     return (
       <div>
-        {modelsWithUserFriendlyNames.map((model) => (
-          <div key={model[0]}>
+        {Object.keys(embeddingChoices).map((model: string) => (
+          <div key={model}>
             <input
-              type="radio"
-              value={model[0]}
+              type="checkbox"
               name="modelChoice"
-              checked={embeddingModelChoice === model[0]}
-              onChange={(e) => setEmbeddingModelChoice(e.target.value)}
+              checked={embeddingChoices[model]}
+              onChange={(e) => setEmbeddingChoices({
+                ...embeddingChoices,
+                [model]: e.target.checked,
+              })}
             />
-            <label>{model[1]}</label>
+            <label>{model}</label>
           </div>
         ))}
       </div>
@@ -98,23 +105,26 @@ export default function Home() {
           </button>
         </div>
       </div>
-      <div>
+      <div className="flex flex-row gap-4">
         {queryResponse &&
           queryResponse.data.map((querydata, idx) => {
-            const chunks = querydata.documents.map((chunk) => {
-              return (
-                <>
-                  <p>{chunk.value}</p>
-                </>
-              );
+            const chunks = querydata.documents.map((chunk, index) => {
+              console.log(chunk);
+                return (
+                  <Chunk key={index} text={chunk.value} />
+                )
             });
             return (
-              <div className="" key={idx}>
+              <div className="flex flex-col flex-1" key={idx}>
                 <p>Query:{queryResponse.query}</p>
                 <p>Embedding Model:{querydata.embeddingModel}</p>
                 <p>Answer:{querydata.answer.response}</p>
                 <p>Answer Model:{querydata.answer.model}</p>
-                {chunks}
+                <div className="flex flex-col gap-4 ">
+                  {chunks}
+                </div>
+                <div style={{ flex: 1 }}></div> {/* Add this div to fill the remaining space */}
+
               </div>
             );
           })}

@@ -38,7 +38,7 @@ export enum LANGUAGE_MODEL {
     GPT_3_5 = 'GPT_3_5'
 }
 
-type Document = {
+export type Document = {
     value: string,
 }
 
