@@ -7,6 +7,10 @@ import { Command } from 'commander';
 
 dotenv.config();
 
+const secondsFrom = (startTime: number) => {
+    return ((Date.now() - startTime) / 1000).toFixed(2);
+}
+
 async function main() {
     // Parse command line arguments and options.
     const program = new Command();
@@ -63,7 +67,7 @@ async function main() {
         const loadingStartTime = Date.now();
         const endBatchIndex = Math.min(startBatchIndex + uploadBatchSize - 1, endChunkIndex);
         const textChunks: TextChunk[] = await parseData(filename, startBatchIndex, endBatchIndex);
-        console.log(`Loaded ${textChunks.length} text chunks in ${((Date.now() - loadingStartTime) / 1000).toFixed(2)} seconds`);
+        console.log(`Loaded ${textChunks.length} text chunks in ${secondsFrom(loadingStartTime)} seconds`);
         
         // Embed the textchunks
         const embeddingStartTime = Date.now();
@@ -72,7 +76,7 @@ async function main() {
             console.error(`Some text chunks failed to embed: ${startBatchIndex} to ${endBatchIndex}`);
             return;
         } else {
-            console.log(`Embedding complete in ${((Date.now() - embeddingStartTime) / 1000).toFixed(2)} seconds`);
+            console.log(`Embedding complete in ${secondsFrom(embeddingStartTime)} seconds`);
         }
 
         // Upload embeddings to database
@@ -83,11 +87,11 @@ async function main() {
             console.error(error);
             return;
         } else {
-            console.log(`Upload: ${startBatchIndex} to ${endBatchIndex} complete in ${((Date.now() - uploadStartTime) / 1000).toFixed(2)} seconds`);
+            console.log(`Upload: ${startBatchIndex} to ${endBatchIndex} complete in ${secondsFrom(uploadStartTime)} seconds`);
         }
     }
 
-    console.log(`\n\nScript finished running in ${((Date.now() - overallStartTime) / 1000).toFixed(2)} seconds.`);
+    console.log(`\n\nScript finished running in ${secondsFrom(overallStartTime)} seconds.`);
 }
 
 main();
