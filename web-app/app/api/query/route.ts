@@ -5,9 +5,20 @@ import { EMBEDDING_MODEL } from '@/engine/types';
 
 export async function POST(request: NextRequest) {
     const body = await request.json()
+    const {query, modelsToRetrieveDocs, generateAnswer} = body;
 
-    const embeddingModel: EMBEDDING_MODEL | null = body.modelToRetrieveDocs ? EMBEDDING_MODEL[body.modelToRetrieveDocs as keyof typeof EMBEDDING_MODEL] : null;
-    const queryResult = await handleQuery(body.query, embeddingModel)
 
-    return NextResponse.json({ modelResponse: queryResult.modelResponse, retrievedDocs: queryResult.retrievedDocuments })
+    // Get embedding models list from dictionary of toggles
+    let embeddingModels = [];
+    if (modelsToRetrieveDocs) {
+        for (let model in modelsToRetrieveDocs) {
+            if (body.modelsToRetrieveDocs[model]) {
+                embeddingModels.push(model as EMBEDDING_MODEL);
+            }
+        }
+    }
+
+    const queryResult = await handleQuery(query, embeddingModels, generateAnswer)
+
+    return NextResponse.json(queryResult);
 }

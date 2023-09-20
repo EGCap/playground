@@ -1,107 +1,168 @@
-"use client"
+"use client";
 
-import { EMBEDDING_MODEL } from '@/engine/types';
-import { FormEvent, useState } from 'react'
+import { Chunk } from "@/components/Chunk";
+import { EMBEDDING_MODEL, QueryResponse } from "@/engine/types";
+import { FormEvent, MouseEventHandler, useState } from "react";
+
+// Add additional embedding models to enable here
+const modelsWithUserFriendlyNames = {
+  [EMBEDDING_MODEL.OPEN_AI]: "text-ada-002",
+  [EMBEDDING_MODEL.IMAGEBIND]: "ImageBind",
+  [EMBEDDING_MODEL.MPNET_BASE_V2]: "mpnet-base-v2",
+};
+
+// Creates a dictionary of embedding models with all values set to false
+const initialEmbeddingChoices = Object.keys(modelsWithUserFriendlyNames).reduce(
+  (choices, key) => {
+    return { ...choices, [key]: true };
+  },
+  {}
+);
 
 export default function Home() {
-  const [shouldFetchDocs, setShouldFetchDocs] = useState<boolean>(false);
-  const [embeddingModelChoice, setEmbeddingModelChoice] = useState<string | null>(null);
-  const [modelResponse, setModelResponse] = useState<string>('');
-  const [retrievedDocs, setRetrievedDocs] = useState<string[]>([]);
+  const [generateAnswer, setGenerateAnswer] = useState<boolean>(false);
+  const [query, setQuery] = useState<string>("");
+  const [embeddingChoices, setEmbeddingChoices] = useState<{
+    [key: string]: boolean;
+  }>(initialEmbeddingChoices);
+  const [queryResponse, setQueryResponse] = useState<QueryResponse>();
+  const [loading, setLoading] = useState<boolean>(false);
 
-  async function runQuery(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
- 
-    const formData = new FormData(event.currentTarget)
-    const response = await fetch('/api/query', {
-      method: 'POST',
+  const datasets = ["wikipedia", "reddit", "arxiv"];
+
+  async function runQuery() {
+
+    if(!query) {
+      alert("Please enter a query");
+      return;
+    }
+    setLoading(true);
+    const response = await fetch("/api/query", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        query: formData.get('queryString'),
-        modelToRetrieveDocs: embeddingModelChoice,
-      })
-    })
- 
-    const data = await response.json()
-    setModelResponse(data.modelResponse)
-    setRetrievedDocs(data.retrievedDocs)
+        query: query,
+        generateAnswer: generateAnswer,
+        modelsToRetrieveDocs: embeddingChoices,
+      }),
+    });
+
+    const data = await response.json();
+    setQueryResponse(data);
+    setLoading(false);
   }
 
   const handleCheckboxChange = () => {
-    setShouldFetchDocs(!shouldFetchDocs);
-    // If we're toggling this, we should also clear out the existing model choice.
-    setEmbeddingModelChoice(null);
-  }
+    setGenerateAnswer(!generateAnswer);
+  };
+
+  const handleQueryChange = (event: FormEvent<HTMLInputElement>) => {
+    setQuery(event.currentTarget.value);
+  };
 
   const displayModelChoice = () => {
-    if (shouldFetchDocs) {
-      const modelsWithUserFriendlyNames = [
-        [EMBEDDING_MODEL.OPEN_AI, 'text-ada-002'],
-        [EMBEDDING_MODEL.MPNET_BASE_V2, 'mpnet-base-v2'],
-        [EMBEDDING_MODEL.INSTRUCTOR_LARGE, 'instructor-large'],
-      ]
-      return (
-        <div>
-          {modelsWithUserFriendlyNames.map(model => (
-            <div key={model[0]}>
+    return (
+      <div>
+        {Object.keys(embeddingChoices).map((model: string) => (
+          <div key={model}>
             <input
-              type="radio"
-              value={model[0]}
+              type="checkbox"
               name="modelChoice"
-              checked={embeddingModelChoice === model[0]}
-              onChange={e => setEmbeddingModelChoice(e.target.value)}
+              checked={embeddingChoices[model]}
+              onChange={(e) =>
+                setEmbeddingChoices({
+                  ...embeddingChoices,
+                  [model]: e.target.checked,
+                })
+              }
             />
-            <label>{model[1]}</label>
+            <label>{model}</label>
           </div>
-          ))}
-        </div>
-      )
-    }
-  }
-  
-  const displayModelResponse = () => {
-    if (modelResponse) {
-      return (
-        <p>
-          <h3>Model Response:</h3>
-          {modelResponse}
-        </p>
-      )
-    }
-  }
-
-  const displayRetrievedDocs = () => {
-    if (retrievedDocs.length > 0) {
-      return (
-        <div>
-          {retrievedDocs.map((doc, idx)  => (
-            <div key={idx}>
-              <h4>Doc {idx}:</h4>
-              <p>{doc}</p>
-            </div>
-          ))}
-        </div>
-      )
-    }
-  }
- 
+        ))}
+      </div>
+    );
+  };
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <form onSubmit={runQuery}>
-        <input type="text" className=" text-black" size={75} name="queryString" />
-        <div/>
-        <label>
-          <input type="checkbox" checked={shouldFetchDocs} onChange={handleCheckboxChange}/>
-          Fetch Related Documents?
-        </label>
-        <div/>
-        {displayModelChoice()}
-        <button type="submit">Run Query</button>
-      </form>
-      {displayModelResponse()}
-      {displayRetrievedDocs()}
+    <main className="flex min-h-screen flex-col items-center gap-4 p-24">
+      <div className="flex flex-col mx-auto">
+        <div id="title">
+          <h1 className="text-4xl font-bold">Embedding Playground</h1>
+        </div>
+        <div className="flex flex-col gap-2">
+          <label htmlFor="queryString">Your query:</label>
+          <input
+            type="text"
+            className="text-black rounded-md border border-black"
+            size={75}
+            name="queryString"
+            onChange={handleQueryChange}
+          />
+          <div className="ml-3 text-sm leading-6">
+            <label>Generate an Answer (RAG)?</label>
+            <input
+              type="checkbox"
+              className="h-4 w-4 rounded border-gray-300"
+              checked={generateAnswer}
+              onChange={handleCheckboxChange}
+            />
+          </div>
+          <div>
+            <p>Embedding models:</p>
+            {displayModelChoice()}
+          </div>
+          <button
+            className="bg-primary text-teal-950 font-bold py-2 px-4 rounded"
+            onClick={runQuery}
+          >
+            {loading ? (
+              <div className="flex items-center justify-center">
+                <svg
+                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                Loading...
+              </div>
+            ) : (
+              <p>Run Query</p>
+            )}
+          </button>
+        </div>
+      </div>
+      <div className="flex flex-row gap-4">
+        {queryResponse &&
+          queryResponse.data.map((querydata, idx) => {
+            const chunks = querydata.documents.map((chunk, index) => {
+              return <Chunk key={index} text={chunk.value} />;
+            });
+            return (
+              <div className="flex flex-col flex-1" key={idx}>
+                <p>Query:{queryResponse.query}</p>
+                <p>Embedding Model:{querydata.embeddingModel}</p>
+                <p>Answer:{querydata.answer.response}</p>
+                <p>Answer Model:{querydata.answer.model}</p>
+                <div className="flex flex-col gap-4 ">{chunks}</div>
+              </div>
+            );
+          })}
+      </div>
     </main>
-  )
+  );
 }

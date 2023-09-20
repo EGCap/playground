@@ -14,4 +14,5 @@ export const getChatModelResponse = async (query: string, documents: string[], m
             await new Promise(resolve => setTimeout(resolve, 4000**i));   
         }
     }
+    return "";
 }

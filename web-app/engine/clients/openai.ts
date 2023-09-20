@@ -43,5 +43,7 @@ export const getOpenAIChatCompletion = async (query: string, documents: string[]
         messages: [{ role: 'user', content: prompt }],
         model: 'gpt-3.5-turbo',
     });
-    return completion.choices[0].message.content;
+    const text =  completion.choices[0].message.content ?? "";
+    
+    return text;
 }

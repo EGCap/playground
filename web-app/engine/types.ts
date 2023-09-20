@@ -41,8 +41,20 @@ export enum LANGUAGE_MODEL {
     GPT_3_5 = 'GPT_3_5'
 }
 
+export type Document = {
+    value: string,
+}
+
+export type QueryData = {
+    answer: {
+        model: LANGUAGE_MODEL,
+        response: string,
+    },
+    embeddingModel: EMBEDDING_MODEL,
+    documents: Document[] | [],
+}
+
 export type QueryResponse = {
     query: string,
-    modelResponse: string,
-    retrievedDocuments: string[]
+    data: QueryData[] | [],
 }
