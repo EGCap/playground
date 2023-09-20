@@ -1,6 +1,6 @@
-import { getBGELargeEmbedding } from '../clients/huggingface';
-import { getOpenAIEmbedding } from '../clients/openai';
-import { getImageBindEmbedding, getMPNETBaseEmbedding } from '../clients/replicate';
+import { getBGELargeEmbeddings } from '../clients/huggingface';
+import { getOpenAIEmbeddings } from '../clients/openai';
+import { getImageBindEmbeddings, getMPNETBaseEmbeddings } from '../clients/replicate';
 import { EMBEDDING_MODEL, EmbeddedTextChunk, TextChunk } from '../types';
 
 export const getEmbeddingDimensionForModel = (embeddingModel: EMBEDDING_MODEL) => {
@@ -16,18 +16,18 @@ export const getEmbeddingDimensionForModel = (embeddingModel: EMBEDDING_MODEL) =
     }
 }
 
-export const getEmbedding = async (input: string, modelType: EMBEDDING_MODEL) => {
+export const getEmbeddingsBatch = async (inputs: string[], embeddingModel: EMBEDDING_MODEL) => {
     for (let i = 0; i < 4; i++) {
         try {
-            switch (modelType as EMBEDDING_MODEL) {
+            switch (embeddingModel as EMBEDDING_MODEL) {
                 case EMBEDDING_MODEL.OPEN_AI:
-                    return getOpenAIEmbedding(input);
+                    return getOpenAIEmbeddings(inputs);
                 case EMBEDDING_MODEL.IMAGEBIND:
-                    return getImageBindEmbedding(input);
+                    return getImageBindEmbeddings(inputs);
                 case EMBEDDING_MODEL.MPNET_BASE_V2:
-                    return getMPNETBaseEmbedding(input);
+                    return getMPNETBaseEmbeddings(inputs);
                 case EMBEDDING_MODEL.BGE_LARGE_1_5:
-                    return getBGELargeEmbedding(input);
+                    return getBGELargeEmbeddings(inputs);
             }
         }
         catch (e) {
@@ -37,19 +37,48 @@ export const getEmbedding = async (input: string, modelType: EMBEDDING_MODEL) =>
     }
 }
 
-export const embedTextChunks = async (
-    textChunks: TextChunk[], embeddingModel: EMBEDDING_MODEL, batched: boolean = false
-) => {
-    if (batched) {
-        return [];
+export const getEmbedding = async (input: string, embeddingModel: EMBEDDING_MODEL) => {
+    const embeddings: number[][] = await getEmbeddingsBatch([input], embeddingModel);
+    if (embeddings && embeddings.length > 0) {
+        return embeddings[0];
     } else {
-        const embeddedChunks: EmbeddedTextChunk[] = await Promise.all(textChunks.map(async textChunk => {
-            const embedding = await getEmbedding(textChunk.textToEmbed, embeddingModel);
-            return {
-                textChunk: textChunk,
-                embedding: embedding,
-            } as EmbeddedTextChunk
-        }));
-        return embeddedChunks;
+        return null;
     }
+}
+
+export const embedTextChunks = async (
+    textChunks: TextChunk[], embeddingModel: EMBEDDING_MODEL, batchSize: number
+) => {
+    // Create the batches
+    let i = 0;
+    const startIdxes = [];
+    while (i < textChunks.length) {
+        startIdxes.push(i);
+        i += batchSize;
+    }
+
+    // Create an array to store results
+    const embeddedTextChunks: EmbeddedTextChunk[] = Array(textChunks.length).fill(null);
+
+    // Process batches in parallel
+    await Promise.all(startIdxes.map(async startIdx => {
+        // Generate embeddings for the batch
+        const endIdx = Math.min(startIdx + batchSize, textChunks.length);
+        const embeddings = await getEmbeddingsBatch(
+            textChunks.slice(startIdx, endIdx).map(textChunk => textChunk.textToEmbed),
+            embeddingModel
+        );
+
+        // Update result array only if all embeddings succeeded
+        if (embeddings && embeddings.length == (endIdx - startIdx)) {
+            for (let idx = 0; idx < embeddings.length; idx++) {
+                embeddedTextChunks[startIdx + idx] = {
+                    textChunk: textChunks[startIdx + idx],
+                    embedding: embeddings[idx]
+                } as EmbeddedTextChunk;
+            }
+        }
+    }));
+
+    return embeddedTextChunks;
 }
