@@ -39,8 +39,8 @@ export default function Home() {
     if (shouldFetchDocs) {
       const modelsWithUserFriendlyNames = [
         [EMBEDDING_MODEL.OPEN_AI, 'text-ada-002'],
-        [EMBEDDING_MODEL.IMAGEBIND, 'ImageBind'],
-        [EMBEDDING_MODEL.MPNET_BASE_V2, 'mpnet-base-v2']
+        [EMBEDDING_MODEL.MPNET_BASE_V2, 'mpnet-base-v2'],
+        [EMBEDDING_MODEL.INSTRUCTOR_LARGE, 'instructor-large'],
       ]
       return (
         <div>

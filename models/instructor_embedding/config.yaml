@@ -1,0 +1,13 @@
+environment_variables: {}
+external_package_dirs: []
+model_metadata: {}
+model_name: Instructor Embedding v1
+python_version: py39
+requirements: [torch, InstructorEmbedding, sentence_transformers]
+resources:
+  accelerator: A10G
+  cpu: '8'
+  memory: 32Gi
+  use_gpu: true
+secrets: {}
+system_packages: []
