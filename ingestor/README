@@ -1,4 +1,4 @@
 Running the ingestor script:
 ```js
-npm run script -- data.jsonl WIKIPEDIA OPEN_AI [--start 100 --chunks 500 --batchsize 50]
+npm run script -- data.jsonl WIKIPEDIA OPEN_AI [--start 23000 --chunks 10000 --uploadbatchsize 1000 --embedbatchsize 10]
 ```
