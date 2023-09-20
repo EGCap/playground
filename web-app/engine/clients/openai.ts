@@ -5,12 +5,12 @@ import { encodingForModel } from "js-tiktoken";
 const openaiClient = new OpenAI({apiKey: OPENAI_API_KEY});
 const encoder = encodingForModel("gpt-3.5-turbo");
 
-export const getOpenAIEmbedding = async (input: string) => {
+export const getOpenAIEmbeddings = async (inputs: string[]) => {
     const response = await openaiClient.embeddings.create({
-        input: input,
+        input: inputs,
         model: 'text-embedding-ada-002'
     });
-    return response.data[0].embedding;
+    return response.data.map(result => result.embedding);
 }
 
 const MAX_TOKENS = 4096;

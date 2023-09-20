@@ -30,7 +30,10 @@ export enum EMBEDDING_MODEL {
 
     // Models hosted on Replicate.
     IMAGEBIND = 'IMAGEBIND', // dim: 1024
-    MPNET_BASE_V2 = 'MPNET_BASE_V2' // dim: 768
+    MPNET_BASE_V2 = 'MPNET_BASE_V2', // dim: 768
+
+    // Models hosted on Baseten.
+    INSTRUCTOR_LARGE = 'INSTRUCTOR_LARGE', // dim: 768
 }
 
 export enum LANGUAGE_MODEL {

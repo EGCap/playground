@@ -10,3 +10,6 @@ export const HUGGING_FACE_API_KEY: string = process.env.HUGGING_FACE_API_KEY as 
 
 // Replicate
 export const REPLICATE_API_KEY: string = process.env.REPLICATE_API_KEY as string
+
+// Baseten
+export const BASETEN_API_KEY: string = process.env.BASETEN_API_KEY as string
