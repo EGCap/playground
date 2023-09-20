@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 import { getChunkCount, parseData } from '../web-app/engine/utils/data';
-import { embedTextChunks, getEmbedding, getEmbeddingDimensionForModel } from '../web-app/engine/utils/embedding';
+import { embedTextChunks } from '../web-app/engine/utils/embedding';
 import { DATABASE, DATASET, EMBEDDING_MODEL, EmbeddedTextChunk, TextChunk } from '../web-app/engine/types';
 import { uploadEmbeddings } from '../web-app/engine/utils/database';
 import { Command } from 'commander';
@@ -8,6 +8,7 @@ import { Command } from 'commander';
 dotenv.config();
 
 async function main() {
+    // Parse command line arguments and options.
     const program = new Command();
     program
         .name('ingestor')
@@ -19,7 +20,8 @@ async function main() {
         .argument('<embeddingModelName>', 'Embedding model to use')
         .option('-s, --start <startChunkIndex>', 'Index of first chunk to embed', '0')
         .option('-n, --chunks <numChunks>', 'Number of chunks to embed')
-        .option('-b, --batchsize <batchSize>', 'Number of chunks per upload batch', '100');
+        .option('-e, --embed <embedBatchSize>', 'Number of chunks to embed per API call', '1')
+        .option('-u, --upload <uploadBatchSize>', 'Number of chunks to upload to DB per API call', '100');
     
     program.parse();
 
@@ -41,7 +43,9 @@ async function main() {
     
     const options = program.opts();
     const startChunkIndex: number = Number(options.start);
-    const batchSize: number = Number(options.batchsize);
+    const embedBatchSize: number = Number(options.embed);
+    const uploadBatchSize: number = Number(options.upload);
+
     let endChunkIndex: number = 0;
     if (options.chunks) {
         const numChunks: number = Number(options.chunks);
@@ -49,21 +53,23 @@ async function main() {
     } else {
         endChunkIndex = await getChunkCount(filename);
     }
-    console.log(`Uploading data from ${startChunkIndex} to ${endChunkIndex} in batches of ${batchSize}`)
+    console.log(`Uploading data from ${startChunkIndex} to ${endChunkIndex} in batches of ${uploadBatchSize} with embedding batch size ${embedBatchSize}.`)
 
-    for(let startBatchIndex = startChunkIndex; startBatchIndex <= endChunkIndex; startBatchIndex += batchSize) {
-        // Load chunk of textchunks
-        const endBatchIndex = Math.min(startBatchIndex + batchSize - 1, endChunkIndex);
+    const overallStartTime = Date.now();
+
+    // Loop through upload batches
+    for(let startBatchIndex = startChunkIndex; startBatchIndex <= endChunkIndex; startBatchIndex += uploadBatchSize) {
+        // Load batch of text chunks to embed adn upload
+        const endBatchIndex = Math.min(startBatchIndex + uploadBatchSize - 1, endChunkIndex);
         const textChunks: TextChunk[] = await parseData(filename, startBatchIndex, endBatchIndex);
         console.log("Loaded text chunks", textChunks.length);
         
-        // Embeds the textchunks
+        // Embed the textchunks
         const embeddingStartTime = Date.now();
-        const embeddedTextChunks: EmbeddedTextChunk[] = await embedTextChunks(textChunks, embeddingModel, false);
+        const embeddedTextChunks: EmbeddedTextChunk[] = await embedTextChunks(textChunks, embeddingModel, embedBatchSize);
 
         // Ensure all embeddings succeeded
-        const expectedDim: number = getEmbeddingDimensionForModel(embeddingModel);
-        if (embeddedTextChunks.some((embeddedTextChunk) => !embeddedTextChunk.embedding || embeddedTextChunk.embedding.length != expectedDim)) {
+        if (embeddedTextChunks.some((x) => !x) || embeddedTextChunks.length != textChunks.length) {
             console.error(`Some text chunks failed to embed: ${startBatchIndex} to ${endBatchIndex}`);
             return;
         } else {
@@ -81,6 +87,8 @@ async function main() {
             console.log(`Upload: ${startBatchIndex} to ${endBatchIndex} complete in ${((Date.now() - uploadStartTime) / 1000).toFixed(2)} seconds`);
         }
     }
+
+    console.log(`\n\nScript finished running in ${((Date.now() - overallStartTime) / 1000).toFixed(2)} seconds.`);
 }
 
 main();

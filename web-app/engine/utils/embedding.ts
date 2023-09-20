@@ -47,38 +47,38 @@ export const getEmbedding = async (input: string, embeddingModel: EMBEDDING_MODE
 }
 
 export const embedTextChunks = async (
-    textChunks: TextChunk[], embeddingModel: EMBEDDING_MODEL, batched: boolean = false
+    textChunks: TextChunk[], embeddingModel: EMBEDDING_MODEL, batchSize: number
 ) => {
-    if (batched) {
-        const embeddings: number[][] = await getEmbeddingsBatch(
-            textChunks.map(textChunk => textChunk.textToEmbed),
+    // Create the batches
+    let i = 0;
+    const startIdxes = [];
+    while (i < textChunks.length) {
+        startIdxes.push(i);
+        i += batchSize;
+    }
+
+    // Create an array to store results
+    const embeddedTextChunks: EmbeddedTextChunk[] = Array(textChunks.length).fill(null);
+
+    // Process batches in parallel
+    await Promise.all(startIdxes.map(async startIdx => {
+        // Generate embeddings for the batch
+        const endIdx = Math.min(startIdx + batchSize, textChunks.length);
+        const embeddings = await getEmbeddingsBatch(
+            textChunks.slice(startIdx, endIdx).map(textChunk => textChunk.textToEmbed),
             embeddingModel
         );
-        
-        // If 1 or more embeddings couldn't be calculated, fail the entire task.
-        if (!embeddings || embeddings.length != textChunks.length) {
-            return textChunks.map(textChunk => {
-                return {
-                    'textChunk': textChunk,
-                    'embedding': [],
+
+        // Update result array only if all embeddings succeeded
+        if (embeddings && embeddings.length == (endIdx - startIdx)) {
+            for (let idx = 0; idx < embeddings.length; idx++) {
+                embeddedTextChunks[startIdx + idx] = {
+                    textChunk: textChunks[startIdx + idx],
+                    embedding: embeddings[idx]
                 } as EmbeddedTextChunk;
-            })
-        } else {
-            return textChunks.map((textChunk, idx) => {
-                return {
-                    'textChunk': textChunk,
-                    'embedding': embeddings[idx],
-                } as EmbeddedTextChunk;
-            })
+            }
         }
-    } else {
-        const embeddedChunks: EmbeddedTextChunk[] = await Promise.all(textChunks.map(async textChunk => {
-            const embedding = await getEmbedding(textChunk.textToEmbed, embeddingModel);
-            return {
-                textChunk: textChunk,
-                embedding: embedding,
-            } as EmbeddedTextChunk
-        }));
-        return embeddedChunks;
-    }
+    }));
+
+    return embeddedTextChunks;
 }
