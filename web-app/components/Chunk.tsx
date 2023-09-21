@@ -1,10 +1,12 @@
 import { useState } from "react";
 
-export const Chunk = ({ key, text }: { key: number; text: string }) => {
+export const Chunk = ({ key, dataset, text, similarity }: { key: number; dataset: string, text: string, similarity: number }) => {
   const [expanded, setExpanded] = useState<boolean>(false);
   return (
     <div key={key} className="bg-slate-100 rounded p-2 rounded flex flex-col">
-      <p>{expanded ? text : text.substring(0, 500)}</p>
+      <p><b>Dataset</b>: { dataset }</p>
+      <p><b>Cosine Distance</b>: {similarity.toFixed(4)}</p>
+      <p><b>Text</b>: {expanded ? text : text.substring(0, 500)}</p>
       <button
         onClick={() => {
           setExpanded(!expanded);

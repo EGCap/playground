@@ -41,8 +41,10 @@ export enum LANGUAGE_MODEL {
     GPT_3_5 = 'GPT_3_5'
 }
 
-export type Document = {
-    value: string,
+export type RetrievedDocument = {
+    dataset: string,
+    document: string,
+    similarity: number,
 }
 
 export type QueryData = {
@@ -50,8 +52,8 @@ export type QueryData = {
         model: LANGUAGE_MODEL,
         response: string,
     },
-    embeddingModel: EMBEDDING_MODEL,
-    documents: Document[] | [],
+    embeddingModel: EMBEDDING_MODEL | null,
+    documents: RetrievedDocument[] | [],
 }
 
 export type QueryResponse = {

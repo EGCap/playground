@@ -3,11 +3,6 @@ import { SUPABASE_URL, SUPABASE_SERVICE_KEY } from "../config";
 import { DATASET, EMBEDDING_MODEL, EmbeddedTextChunk } from "../types";
 import { getEmbeddingDimensionForModel } from "../utils/embedding";
 
-type SupabaseDocument = {
-  id: number;
-  document: string;
-  similarity: number;
-};
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 const SUPABASE_EMBEDDINGS_TABLE_NAME: string = "embeddings";
 
@@ -41,62 +36,30 @@ export const uploadEmbeddingsToSupabase = async (
 
 export const getNearestDocumentsFromSupabase = async (
   queryEmbedding: number[],
-  dataset: DATASET,
   embeddingModel: EMBEDDING_MODEL,
-  threshold: number,
   maxMatches: number
 ) => {
-  if (getEmbeddingDimensionForModel(embeddingModel) === 768) {
-    const { data: results, error } = await supabaseClient.rpc(
-      "nearest_documents_768",
-      {
-        query_embedding: queryEmbedding,
-        query_dataset: DATASET[dataset],
-        query_embedding_model: EMBEDDING_MODEL[embeddingModel],
-        similarity_threshold: threshold,
-        max_matches: maxMatches,
-      }
-    );
-    if (error) {
-      console.log("error:", error);
-      throw error;
-    }
+  const expectedDim = getEmbeddingDimensionForModel(embeddingModel);
+  if (expectedDim !== queryEmbedding.length) {
+    console.log(`Expected vector of dim ${expectedDim} but got ${queryEmbedding.length}!`);
+    return [];
+  }
 
-    return results.map((result: SupabaseDocument) => result.document);
-  }
-  if (getEmbeddingDimensionForModel(embeddingModel) === 1024) {
-    const { data: results, error } = await supabaseClient.rpc(
-      "nearest_documents_1024",
-      {
-        query_embedding: queryEmbedding,
-        query_dataset: DATASET[dataset],
-        query_embedding_model: EMBEDDING_MODEL[embeddingModel],
-        similarity_threshold: threshold,
-        max_matches: maxMatches,
-      }
-    );
-    if (error) {
-      console.log("error:", error);
-      throw error;
+  const supabaseFunc = `nearest_documents_${expectedDim}`;
+  const { data: results, error } = await supabaseClient.rpc(
+    supabaseFunc,
+    {
+      query_embedding: queryEmbedding,
+      query_embedding_model: EMBEDDING_MODEL[embeddingModel],
+      max_matches: maxMatches,
     }
+  );
 
-    return results.map((result: SupabaseDocument) => result.document);
+  if (error) {
+    console.log("error:", error);
+    throw error;
   }
-  if (getEmbeddingDimensionForModel(embeddingModel) === 1536) {
-    const { data: results, error } = await supabaseClient.rpc(
-      "nearest_documents",
-      {
-        query_embedding: queryEmbedding,
-        query_dataset: DATASET[dataset],
-        query_embedding_model: EMBEDDING_MODEL[embeddingModel],
-        similarity_threshold: threshold,
-        max_matches: maxMatches,
-      }
-    );
-    if (error) {
-      console.log("error:", error);
-      throw error;
-    }
-    return results.map((result: SupabaseDocument) => result.document);
-  }
+
+  console.log(results);
+  return results;
 };

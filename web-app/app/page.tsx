@@ -5,14 +5,14 @@ import { EMBEDDING_MODEL, QueryResponse } from "@/engine/types";
 import { FormEvent, MouseEventHandler, useState } from "react";
 
 // Add additional embedding models to enable here
-const modelsWithUserFriendlyNames = {
-  [EMBEDDING_MODEL.OPEN_AI]: "text-ada-002",
-  [EMBEDDING_MODEL.IMAGEBIND]: "ImageBind",
+const modelsWithUserFriendlyNames = new Map(Object.entries({
+  [EMBEDDING_MODEL.INSTRUCTOR_LARGE]: "instructor-large",
   [EMBEDDING_MODEL.MPNET_BASE_V2]: "mpnet-base-v2",
-};
+  [EMBEDDING_MODEL.OPEN_AI]: "text-ada-002",
+}));
 
 // Creates a dictionary of embedding models with all values set to false
-const initialEmbeddingChoices = Object.keys(modelsWithUserFriendlyNames).reduce(
+const initialEmbeddingChoices = Array.from(modelsWithUserFriendlyNames.keys()).reduce(
   (choices, key) => {
     return { ...choices, [key]: true };
   },
@@ -27,8 +27,6 @@ export default function Home() {
   }>(initialEmbeddingChoices);
   const [queryResponse, setQueryResponse] = useState<QueryResponse>();
   const [loading, setLoading] = useState<boolean>(false);
-
-  const datasets = ["wikipedia", "reddit", "arxiv"];
 
   async function runQuery() {
 
@@ -78,7 +76,7 @@ export default function Home() {
                 })
               }
             />
-            <label>{model}</label>
+            <label>{modelsWithUserFriendlyNames.get(model)}</label>
           </div>
         ))}
       </div>
@@ -100,7 +98,7 @@ export default function Home() {
             onChange={handleQueryChange}
           />
           <div className="ml-3 text-sm leading-6">
-            <label>Generate an Answer (RAG)?</label>
+            <label>Generate an Answer (RAG)? </label>
             <input
               type="checkbox"
               className="h-4 w-4 rounded border-gray-300"
@@ -150,14 +148,12 @@ export default function Home() {
         {queryResponse &&
           queryResponse.data.map((querydata, idx) => {
             const chunks = querydata.documents.map((chunk, index) => {
-              return <Chunk key={index} text={chunk.value} />;
+              return <Chunk key={index} dataset={chunk.dataset} text={chunk.document} similarity={chunk.similarity} />;
             });
             return (
               <div className="flex flex-col flex-1" key={idx}>
-                <p>Query:{queryResponse.query}</p>
-                <p>Embedding Model:{querydata.embeddingModel}</p>
-                <p>Answer:{querydata.answer.response}</p>
-                <p>Answer Model:{querydata.answer.model}</p>
+                <p><b>Embedding Model</b>: {querydata.embeddingModel ? modelsWithUserFriendlyNames.get(querydata.embeddingModel) : 'No context retrieved'}</p>
+                <p><b>Answer</b>: { querydata.answer.response}</p>
                 <div className="flex flex-col gap-4 ">{chunks}</div>
               </div>
             );
