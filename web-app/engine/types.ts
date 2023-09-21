@@ -37,6 +37,27 @@ export enum EMBEDDING_MODEL {
     INSTRUCTOR_LARGE = 'INSTRUCTOR_LARGE', // dim: 768
 }
 
+// Add additional embedding models to enable here
+export const enabledEmbeddingModels: EMBEDDING_MODEL[] = [
+    EMBEDDING_MODEL.INSTRUCTOR_LARGE,
+    EMBEDDING_MODEL.MPNET_BASE_V2,
+    EMBEDDING_MODEL.OPEN_AI,
+];
+  
+export const userFriendlyNameByModel = new Map(Object.entries({
+    [EMBEDDING_MODEL.INSTRUCTOR_LARGE]: "instructor-large",
+    [EMBEDDING_MODEL.MPNET_BASE_V2]: "mpnet-base-v2",
+    [EMBEDDING_MODEL.OPEN_AI]: "text-ada-002",
+}));
+
+export const enabledDatasets = [
+    DATASET.WIKIPEDIA,
+];
+
+export const userFriendlyNameByDataset = new Map(Object.entries({
+    [DATASET.WIKIPEDIA]: "Wikipedia",
+}));
+
 export enum LANGUAGE_MODEL {
     // OpenAI's GPT-3.5-Turbo model.
     GPT_3_5 = 'GPT_3_5'
