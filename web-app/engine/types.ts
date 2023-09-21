@@ -36,6 +36,19 @@ export enum EMBEDDING_MODEL {
     INSTRUCTOR_LARGE = 'INSTRUCTOR_LARGE', // dim: 768
 }
 
+export const modelsWithUserFriendlyNames = {
+    [EMBEDDING_MODEL.OPEN_AI]: "text-ada-002",
+    [EMBEDDING_MODEL.IMAGEBIND]: "ImageBind",
+    [EMBEDDING_MODEL.MPNET_BASE_V2]: "mpnet-base-v2",
+    [EMBEDDING_MODEL.BGE_LARGE_1_5]: "BGE-large-1.5",
+    [EMBEDDING_MODEL.INSTRUCTOR_LARGE]: "Instructor-large",
+  };
+
+export const datasetsWithUserFriendlyNames = {
+[DATASET.WIKIPEDIA]: "Wikipedia",
+};
+
+
 export enum LANGUAGE_MODEL {
     // OpenAI's GPT-3.5-Turbo model.
     GPT_3_5 = 'GPT_3_5'
