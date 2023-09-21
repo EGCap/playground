@@ -271,7 +271,7 @@ export default function Home() {
 
         <div id="reference" className="flex flex-col gap-2">
           <h3>Link: {" "}
-            <a className="hover-link" href="www.embeds.ai">embeds.ai</a>
+            <a className="hover-link" href="https://playground-iota-ten.vercel.app/">embeds.ai</a>
           </h3>
         </div>
 
