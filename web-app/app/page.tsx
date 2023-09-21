@@ -4,12 +4,23 @@ import { Chunk } from "@/components/Chunk";
 import {
   DATASET,
   EMBEDDING_MODEL,
+  QueryData,
   QueryResponse,
-  datasetsWithUserFriendlyNames,
-  modelsWithUserFriendlyNames,
+  enabledDatasets,
+  enabledEmbeddingModels,
+  userFriendlyNameByDataset,
+  userFriendlyNameByModel,
 } from "@/engine/types";
 import { FormEvent, MouseEventHandler, useState } from "react";
 
+<<<<<<< HEAD
+// Used for determinstic ordering of models / results.
+const modelSorter = (model1: string | null, model2: string | null) => {
+  const idx1 = model1 ? enabledEmbeddingModels.indexOf(EMBEDDING_MODEL[model1 as keyof typeof EMBEDDING_MODEL]) : -1;
+  const idx2 = model2 ? enabledEmbeddingModels.indexOf(EMBEDDING_MODEL[model2 as keyof typeof EMBEDDING_MODEL]) : -1;
+  return idx1 - idx2;
+}
+=======
 // Add additional embedding models to enable here
 const enabledEmbeddingModels = [
   EMBEDDING_MODEL.OPEN_AI,
@@ -18,6 +29,7 @@ const enabledEmbeddingModels = [
 ];
 
 const enabledDatasets = [DATASET.WIKIPEDIA];
+>>>>>>> main
 
 // Creates a dictionary of embedding models with all values set to true
 const initialEmbeddingChoices = enabledEmbeddingModels.reduce((acc, model) => {
@@ -27,8 +39,6 @@ const initialEmbeddingChoices = enabledEmbeddingModels.reduce((acc, model) => {
 const initialDatasetChoices = enabledDatasets.reduce((acc, dataset) => {
   return { ...acc, [dataset]: true };
 }, {});
-
-const datasets = ["wikipedia"];
 
 const formStates = ["Search", "Upload"];
 
@@ -84,9 +94,13 @@ export default function Home() {
       return;
     }
     setLoading(true);
+<<<<<<< HEAD
+    await fetch("/api/upload", {
+=======
     const toUploadText = uploadText;
     setUploadText("");
     const response = await fetch("/api/upload", {
+>>>>>>> main
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -97,6 +111,7 @@ export default function Home() {
     });
     
     setLoading(false);
+    setUploadText("");
   };
 
   const displayDatasets = () => {
@@ -104,7 +119,7 @@ export default function Home() {
       <div>
         {Object.keys(datasetsChoices).map((dataset: string) => {
           const datasetName = DATASET[dataset as keyof typeof DATASET];
-          const friendlyName = datasetsWithUserFriendlyNames[datasetName];
+          const friendlyName = userFriendlyNameByDataset.get(datasetName);
           return (
             <div key={dataset}>
               <input
@@ -130,10 +145,10 @@ export default function Home() {
   const displayModelChoice = () => {
     return (
       <div>
-        {Object.keys(embeddingChoices).map((model: string) => {
+        {Object.keys(embeddingChoices).sort(modelSorter).map((model: string) => {
           const modelName =
             EMBEDDING_MODEL[model as keyof typeof EMBEDDING_MODEL];
-          const friendlyName = modelsWithUserFriendlyNames[modelName];
+          const friendlyName = userFriendlyNameByModel.get(modelName);
           return (
             <div key={model}>
               <input
@@ -344,7 +359,9 @@ export default function Home() {
       </div>
       <div className="flex flex-row gap-4 mt-6 flex-1">
         {queryResponse &&
-          queryResponse.data.map((querydata, idx) => {
+          queryResponse.data.sort((a: QueryData, b: QueryData) => {
+            return modelSorter(a.embeddingModel, b.embeddingModel);
+          }).map((querydata, idx) => {
             const chunks = querydata.documents.map((chunk, index) => {
               return (
                 <Chunk
@@ -359,14 +376,10 @@ export default function Home() {
               <div className="flex flex-col flex-1" key={idx}>
                 <p>
                   <b>Embedding Model</b>:{" "}
-                  {querydata.embeddingModel
-                    ? modelsWithUserFriendlyNames[querydata.embeddingModel]
-                    : "No context retrieved"}
+                  {querydata.embeddingModel ? userFriendlyNameByModel.get(querydata.embeddingModel) : 'No context retrieved'}
                 </p>
-                <p>
-                  <b>Answer</b>: {querydata.answer.response}
-                </p>
-                <div className="flex flex-col gap-4">{chunks}</div>
+                <p><b>Answer</b>: {querydata.answer.response}</p>
+                <div className="flex flex-col gap-4 ">{chunks}</div>
               </div>
             );
           })}

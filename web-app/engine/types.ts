@@ -1,6 +1,6 @@
 export type TextChunk = {
     textToEmbed: string,
-    chunkIndex: number,
+    chunkIndex: number | null,
     document: {
         rawText: string,
         title: string | null,
@@ -14,7 +14,8 @@ export type EmbeddedTextChunk = {
 }
 
 export enum DATASET {
-    WIKIPEDIA = 'WIKIPEDIA'
+    WIKIPEDIA = 'WIKIPEDIA',
+    CUSTOM = 'CUSTOM',
 }
 
 export enum DATABASE {
@@ -36,18 +37,26 @@ export enum EMBEDDING_MODEL {
     INSTRUCTOR_LARGE = 'INSTRUCTOR_LARGE', // dim: 768
 }
 
-export const modelsWithUserFriendlyNames = {
-    [EMBEDDING_MODEL.OPEN_AI]: "text-ada-002",
-    [EMBEDDING_MODEL.IMAGEBIND]: "ImageBind",
+// Add additional embedding models to enable here
+export const enabledEmbeddingModels: EMBEDDING_MODEL[] = [
+    EMBEDDING_MODEL.INSTRUCTOR_LARGE,
+    EMBEDDING_MODEL.MPNET_BASE_V2,
+    EMBEDDING_MODEL.OPEN_AI,
+];
+  
+export const userFriendlyNameByModel = new Map(Object.entries({
+    [EMBEDDING_MODEL.INSTRUCTOR_LARGE]: "instructor-large",
     [EMBEDDING_MODEL.MPNET_BASE_V2]: "mpnet-base-v2",
-    [EMBEDDING_MODEL.BGE_LARGE_1_5]: "BGE-large-1.5",
-    [EMBEDDING_MODEL.INSTRUCTOR_LARGE]: "Instructor-large",
-  };
+    [EMBEDDING_MODEL.OPEN_AI]: "text-ada-002",
+}));
 
-export const datasetsWithUserFriendlyNames = {
-[DATASET.WIKIPEDIA]: "Wikipedia",
-};
+export const enabledDatasets = [
+    DATASET.WIKIPEDIA,
+];
 
+export const userFriendlyNameByDataset = new Map(Object.entries({
+    [DATASET.WIKIPEDIA]: "Wikipedia",
+}));
 
 export enum LANGUAGE_MODEL {
     // OpenAI's GPT-3.5-Turbo model.
