@@ -13,12 +13,23 @@ import {
 } from "@/engine/types";
 import { FormEvent, MouseEventHandler, useState } from "react";
 
+<<<<<<< HEAD
 // Used for determinstic ordering of models / results.
 const modelSorter = (model1: string | null, model2: string | null) => {
   const idx1 = model1 ? enabledEmbeddingModels.indexOf(EMBEDDING_MODEL[model1 as keyof typeof EMBEDDING_MODEL]) : -1;
   const idx2 = model2 ? enabledEmbeddingModels.indexOf(EMBEDDING_MODEL[model2 as keyof typeof EMBEDDING_MODEL]) : -1;
   return idx1 - idx2;
 }
+=======
+// Add additional embedding models to enable here
+const enabledEmbeddingModels = [
+  EMBEDDING_MODEL.OPEN_AI,
+  EMBEDDING_MODEL.INSTRUCTOR_LARGE,
+  EMBEDDING_MODEL.MPNET_BASE_V2,
+];
+
+const enabledDatasets = [DATASET.WIKIPEDIA];
+>>>>>>> main
 
 // Creates a dictionary of embedding models with all values set to true
 const initialEmbeddingChoices = enabledEmbeddingModels.reduce((acc, model) => {
@@ -83,15 +94,22 @@ export default function Home() {
       return;
     }
     setLoading(true);
+<<<<<<< HEAD
     await fetch("/api/upload", {
+=======
+    const toUploadText = uploadText;
+    setUploadText("");
+    const response = await fetch("/api/upload", {
+>>>>>>> main
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        text: uploadText,
+        text: toUploadText,
       }),
     });
+    
     setLoading(false);
     setUploadText("");
   };
@@ -161,7 +179,10 @@ export default function Home() {
           className="p-2 mt-2 border-black block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 sm:text-sm sm:leading-6 focus:border-emerald-300 focus:ring-emerald-500"
           rows={4}
           cols={50}
-          onChange={(e) => setUploadText(e.target.value)}
+          onChange={(e) => {
+            setUploadText(e.target.value);
+          }}
+          value={uploadText}
           style={{ resize: "none" }}
         />
         <button
@@ -289,7 +310,7 @@ export default function Home() {
 
                 {/* Additional options */}
                 <div className="leading-6 mt-2">
-                <p className="font-bold">Extra:</p>
+                  <p className="font-bold">Extra:</p>
                   <input
                     type="checkbox"
                     className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-600"
@@ -336,7 +357,7 @@ export default function Home() {
           </div>
         )}
       </div>
-      <div className="flex flex-row gap-4 mt-6">
+      <div className="flex flex-row gap-4 mt-6 flex-1">
         {queryResponse &&
           queryResponse.data.sort((a: QueryData, b: QueryData) => {
             return modelSorter(a.embeddingModel, b.embeddingModel);
