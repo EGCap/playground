@@ -1,18 +1,19 @@
 "use client";
 
 import { Chunk } from "@/components/Chunk";
-import { EMBEDDING_MODEL, QueryResponse } from "@/engine/types";
-import { FormEvent, MouseEventHandler, useState } from "react";
+import { embeddingModelsInProd, userFriendlyNameByModel } from "@/engine/constants";
+import { EMBEDDING_MODEL, QueryData, QueryResponse } from "@/engine/types";
+import { FormEvent, useState } from "react";
 
-// Add additional embedding models to enable here
-const modelsWithUserFriendlyNames = new Map(Object.entries({
-  [EMBEDDING_MODEL.INSTRUCTOR_LARGE]: "instructor-large",
-  [EMBEDDING_MODEL.MPNET_BASE_V2]: "mpnet-base-v2",
-  [EMBEDDING_MODEL.OPEN_AI]: "text-ada-002",
-}));
+// Used for determinstic ordering of models / results.
+const modelSorter = (model1: string | null, model2: string | null) => {
+  const idx1 = model1 ? embeddingModelsInProd.indexOf(EMBEDDING_MODEL[model1 as keyof typeof EMBEDDING_MODEL]) : -1;
+  const idx2 = model2 ? embeddingModelsInProd.indexOf(EMBEDDING_MODEL[model2 as keyof typeof EMBEDDING_MODEL]) : -1;
+  return idx1 - idx2;
+}
 
 // Creates a dictionary of embedding models with all values set to false
-const initialEmbeddingChoices = Array.from(modelsWithUserFriendlyNames.keys()).reduce(
+const initialEmbeddingChoices = embeddingModelsInProd.reduce(
   (choices, key) => {
     return { ...choices, [key]: true };
   },
@@ -63,7 +64,7 @@ export default function Home() {
   const displayModelChoice = () => {
     return (
       <div>
-        {Object.keys(embeddingChoices).map((model: string) => (
+        {Object.keys(embeddingChoices).sort(modelSorter).map((model: string) => (
           <div key={model}>
             <input
               type="checkbox"
@@ -76,7 +77,7 @@ export default function Home() {
                 })
               }
             />
-            <label>{modelsWithUserFriendlyNames.get(model)}</label>
+            <label>{userFriendlyNameByModel.get(model)}</label>
           </div>
         ))}
       </div>
@@ -146,13 +147,15 @@ export default function Home() {
       </div>
       <div className="flex flex-row gap-4">
         {queryResponse &&
-          queryResponse.data.map((querydata, idx) => {
+          queryResponse.data.sort((a: QueryData, b: QueryData) => {
+            return modelSorter(a.embeddingModel, b.embeddingModel);
+          }).map((querydata, idx) => {
             const chunks = querydata.documents.map((chunk, index) => {
               return <Chunk key={index} dataset={chunk.dataset} text={chunk.document} similarity={chunk.similarity} />;
             });
             return (
               <div className="flex flex-col flex-1" key={idx}>
-                <p><b>Embedding Model</b>: {querydata.embeddingModel ? modelsWithUserFriendlyNames.get(querydata.embeddingModel) : 'No context retrieved'}</p>
+                <p><b>Embedding Model</b>: {querydata.embeddingModel ? userFriendlyNameByModel.get(querydata.embeddingModel) : 'No context retrieved'}</p>
                 <p><b>Answer</b>: { querydata.answer.response}</p>
                 <div className="flex flex-col gap-4 ">{chunks}</div>
               </div>

@@ -60,6 +60,5 @@ export const getNearestDocumentsFromSupabase = async (
     throw error;
   }
 
-  console.log(results);
   return results;
 };
