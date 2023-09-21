@@ -252,7 +252,7 @@ export default function Home() {
     <main className="flex min-h-screen flex-col items-center gap-4 p-24">
       <div className="flex flex-col mx-auto w-1/2">
         <div id="title">
-          <h1 className="text-4xl font-bold">Elad Gil's</h1>
+          <h1 className="text-4xl font-bold">Elad Gil&apos;s</h1>
           <h1 className="text-4xl font-bold">Embedding Playground</h1>
         </div>
 
