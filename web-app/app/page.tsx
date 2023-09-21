@@ -336,7 +336,7 @@ export default function Home() {
           </div>
         )}
       </div>
-      <div className="flex flex-row gap-4">
+      <div className="flex flex-row gap-4 mt-6">
         {queryResponse &&
           queryResponse.data.map((querydata, idx) => {
             const chunks = querydata.documents.map((chunk, index) => {
