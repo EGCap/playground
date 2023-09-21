@@ -288,7 +288,8 @@ export default function Home() {
                 </div>
 
                 {/* Additional options */}
-                <div className="leading-6">
+                <div className="leading-6 mt-2">
+                <p className="font-bold">Extra:</p>
                   <input
                     type="checkbox"
                     className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-600"
@@ -335,7 +336,7 @@ export default function Home() {
           </div>
         )}
       </div>
-      <div className="flex flex-row gap-4">
+      <div className="flex flex-row gap-4 mt-6">
         {queryResponse &&
           queryResponse.data.map((querydata, idx) => {
             const chunks = querydata.documents.map((chunk, index) => {
