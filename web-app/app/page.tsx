@@ -13,7 +13,6 @@ import { FormEvent, MouseEventHandler, useState } from "react";
 // Add additional embedding models to enable here
 const enabledEmbeddingModels = [
   EMBEDDING_MODEL.OPEN_AI,
-  EMBEDDING_MODEL.IMAGEBIND,
   EMBEDDING_MODEL.MPNET_BASE_V2,
   EMBEDDING_MODEL.INSTRUCTOR_LARGE
 ];
