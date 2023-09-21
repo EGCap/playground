@@ -15,14 +15,12 @@ export const uploadEmbeddings = async (
 
 export const fetchNearestDocuments = async (
     queryEmbedding: number[],
-    dataset: DATASET,
     embeddingModel: EMBEDDING_MODEL,
-    threshold: number,
     maxMatches: number,
     database: DATABASE
 ) => {
     switch (database as DATABASE) {
         case DATABASE.SUPABASE:
-            return await getNearestDocumentsFromSupabase(queryEmbedding, dataset, embeddingModel, threshold, maxMatches);
+            return await getNearestDocumentsFromSupabase(queryEmbedding, embeddingModel, maxMatches);
     }
 }

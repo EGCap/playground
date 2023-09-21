@@ -339,14 +339,26 @@ export default function Home() {
         {queryResponse &&
           queryResponse.data.map((querydata, idx) => {
             const chunks = querydata.documents.map((chunk, index) => {
-              return <Chunk key={index} text={chunk.value} />;
+              return (
+                <Chunk
+                  key={index}
+                  dataset={chunk.dataset}
+                  text={chunk.document}
+                  similarity={chunk.similarity}
+                />
+              );
             });
             return (
               <div className="flex flex-col flex-1" key={idx}>
-                <p>Query:{queryResponse.query}</p>
-                <p>Embedding Model:{querydata.embeddingModel}</p>
-                <p>Answer:{querydata.answer.response}</p>
-                <p>Answer Model:{querydata.answer.model}</p>
+                <p>
+                  <b>Embedding Model</b>:{" "}
+                  {querydata.embeddingModel
+                    ? modelsWithUserFriendlyNames[querydata.embeddingModel]
+                    : "No context retrieved"}
+                </p>
+                <p>
+                  <b>Answer</b>: {querydata.answer.response}
+                </p>
                 <div className="flex flex-col gap-4 ">{chunks}</div>
               </div>
             );

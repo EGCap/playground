@@ -7,10 +7,6 @@ import { Command } from 'commander';
 
 dotenv.config();
 
-const secondsFrom = (startTime: number) => {
-    return ((Date.now() - startTime) / 1000).toFixed(2);
-}
-
 async function main() {
     // Parse command line arguments and options.
     const program = new Command();
@@ -95,3 +91,7 @@ async function main() {
 }
 
 main();
+function secondsFrom(loadingStartTime: number) {
+    throw new Error('Function not implemented.');
+}
+

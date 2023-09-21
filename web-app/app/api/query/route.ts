@@ -18,6 +18,11 @@ export async function POST(request: NextRequest) {
         }
     }
 
+    // If we are generating an answer, include "no model" as well.
+    if (generateAnswer) {
+        embeddingModels.push(null);
+    }
+
     const queryResult = await handleQuery(query, embeddingModels, generateAnswer)
 
     return NextResponse.json(queryResult);
