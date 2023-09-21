@@ -13,23 +13,13 @@ import {
 } from "@/engine/types";
 import { FormEvent, MouseEventHandler, useState } from "react";
 
-<<<<<<< HEAD
 // Used for determinstic ordering of models / results.
 const modelSorter = (model1: string | null, model2: string | null) => {
   const idx1 = model1 ? enabledEmbeddingModels.indexOf(EMBEDDING_MODEL[model1 as keyof typeof EMBEDDING_MODEL]) : -1;
   const idx2 = model2 ? enabledEmbeddingModels.indexOf(EMBEDDING_MODEL[model2 as keyof typeof EMBEDDING_MODEL]) : -1;
   return idx1 - idx2;
 }
-=======
-// Add additional embedding models to enable here
-const enabledEmbeddingModels = [
-  EMBEDDING_MODEL.OPEN_AI,
-  EMBEDDING_MODEL.INSTRUCTOR_LARGE,
-  EMBEDDING_MODEL.MPNET_BASE_V2,
-];
 
-const enabledDatasets = [DATASET.WIKIPEDIA];
->>>>>>> main
 
 // Creates a dictionary of embedding models with all values set to true
 const initialEmbeddingChoices = enabledEmbeddingModels.reduce((acc, model) => {
@@ -94,13 +84,9 @@ export default function Home() {
       return;
     }
     setLoading(true);
-<<<<<<< HEAD
-    await fetch("/api/upload", {
-=======
     const toUploadText = uploadText;
     setUploadText("");
     const response = await fetch("/api/upload", {
->>>>>>> main
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -111,7 +97,6 @@ export default function Home() {
     });
     
     setLoading(false);
-    setUploadText("");
   };
 
   const displayDatasets = () => {
