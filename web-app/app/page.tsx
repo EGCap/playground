@@ -11,7 +11,7 @@ import {
   userFriendlyNameByDataset,
   userFriendlyNameByModel,
 } from "@/engine/types";
-import { FormEvent, MouseEventHandler, useState } from "react";
+import { FormEvent, useState } from "react";
 
 // Used for determinstic ordering of models / results.
 const modelSorter = (model1: string | null, model2: string | null) => {
@@ -258,8 +258,21 @@ export default function Home() {
     <main className="flex min-h-screen flex-col items-center gap-4 p-24">
       <div className="flex flex-col mx-auto w-1/2">
         <div id="title">
-          <h1 className="text-4xl font-bold">Elad Gil&apos;s</h1>
-          <h1 className="text-4xl font-bold">Embedding Playground</h1>
+          <h1 className="text-4xl font-bold">Embedding Battleground</h1>
+        </div>
+
+        <div id="author" className="flex flex-col gap-2 mt-4">
+          <h3>Built by {" "}
+            <a className="hover-link" href="https://twitter.com/shreyanj98">Shreyan Jain</a>, {" "}
+            <a className="hover-link" href="https://twitter.com/davidtsong">David Song</a>, and {" "}
+            <a className="hover-link" href="https://twitter.com/eladgil">Elad Gil</a>
+          </h3>
+        </div>
+
+        <div id="reference" className="flex flex-col gap-2">
+          <h3>Link: {" "}
+            <a className="hover-link" href="www.embeds.ai">embeds.ai</a>
+          </h3>
         </div>
 
         {FormStateComponent()}

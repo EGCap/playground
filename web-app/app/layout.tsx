@@ -5,8 +5,8 @@ import { Inter } from 'next/font/google'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Embedding Playground',
-  description: 'Built by Elad Gil.',
+  title: 'Embedding Battleground',
+  description: 'Built by Shreyan Jain, David Song, and Elad Gil.',
 }
 
 export default function RootLayout({
