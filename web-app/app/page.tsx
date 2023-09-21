@@ -13,7 +13,7 @@ import { FormEvent, MouseEventHandler, useState } from "react";
 // Add additional embedding models to enable here
 const enabledEmbeddingModels = [
   EMBEDDING_MODEL.OPEN_AI,
-  EMBEDDING_MODEL.IMAGEBIND,
+  EMBEDDING_MODEL.INSTRUCTOR_LARGE,
   EMBEDDING_MODEL.MPNET_BASE_V2,
 ];
 
@@ -84,15 +84,18 @@ export default function Home() {
       return;
     }
     setLoading(true);
+    const toUploadText = uploadText;
+    setUploadText("");
     const response = await fetch("/api/upload", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        text: uploadText,
+        text: toUploadText,
       }),
     });
+    
     setLoading(false);
   };
 
@@ -161,7 +164,10 @@ export default function Home() {
           className="p-2 mt-2 border-black block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 sm:text-sm sm:leading-6 focus:border-emerald-300 focus:ring-emerald-500"
           rows={4}
           cols={50}
-          onChange={(e) => setUploadText(e.target.value)}
+          onChange={(e) => {
+            setUploadText(e.target.value);
+          }}
+          value={uploadText}
           style={{ resize: "none" }}
         />
         <button
@@ -289,7 +295,7 @@ export default function Home() {
 
                 {/* Additional options */}
                 <div className="leading-6 mt-2">
-                <p className="font-bold">Extra:</p>
+                  <p className="font-bold">Extra:</p>
                   <input
                     type="checkbox"
                     className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-600"
@@ -336,7 +342,7 @@ export default function Home() {
           </div>
         )}
       </div>
-      <div className="flex flex-row gap-4 mt-6">
+      <div className="flex flex-row gap-4 mt-6 flex-1">
         {queryResponse &&
           queryResponse.data.map((querydata, idx) => {
             const chunks = querydata.documents.map((chunk, index) => {
@@ -360,7 +366,7 @@ export default function Home() {
                 <p>
                   <b>Answer</b>: {querydata.answer.response}
                 </p>
-                <div className="flex flex-col gap-4 ">{chunks}</div>
+                <div className="flex flex-col gap-4">{chunks}</div>
               </div>
             );
           })}
