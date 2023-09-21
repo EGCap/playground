@@ -1,6 +1,6 @@
 export type TextChunk = {
     textToEmbed: string,
-    chunkIndex: number,
+    chunkIndex: number | null,
     document: {
         rawText: string,
         title: string | null,

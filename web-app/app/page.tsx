@@ -83,7 +83,7 @@ export default function Home() {
       return;
     }
     setLoading(true);
-    const response = await fetch("/api/upload", {
+    await fetch("/api/upload", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -93,6 +93,7 @@ export default function Home() {
       }),
     });
     setLoading(false);
+    setUploadText("");
   };
 
   const displayDatasets = () => {
