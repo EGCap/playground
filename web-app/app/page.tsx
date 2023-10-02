@@ -269,12 +269,6 @@ export default function Home() {
           </h3>
         </div>
 
-        <div id="reference" className="flex flex-col gap-2">
-          <h3>Link: {" "}
-            <a className="hover-link" href="https://www.embeds.ai">embeds.ai</a>
-          </h3>
-        </div>
-
         {FormStateComponent()}
 
         {formState === "Upload" && uploadTextComponent()}
