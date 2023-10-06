@@ -1,0 +1,13 @@
+environment_variables: {}
+external_package_dirs: []
+model_metadata: {}
+model_name: sentence-transformers/all-mpnet-base-v2
+python_version: py311
+requirements: [sentence-transformers]
+resources:
+  accelerator: null
+  cpu: '1'
+  memory: 2Gi
+  use_gpu: false
+secrets: {}
+system_packages: []

@@ -15,8 +15,7 @@ export const getOpenAIEmbeddings = async (inputs: string[]) => {
 
 const MAX_TOKENS = 4096;
 const RESPONSE_TOKEN_BUDGET = 500;
-const PROMPT_HEADER = 'You are a helpful AI assistant. Use the documents below to answer the subsequent question. \
-If the answer cannot be found in the documents, write "I could not find an answer."'
+const PROMPT_HEADER = 'You are a helpful AI assistant. Use the documents below to answer the subsequent question."'
 
 export const getOpenAIChatCompletion = async (query: string, documents: string[]) => {
     let prompt: string = ''

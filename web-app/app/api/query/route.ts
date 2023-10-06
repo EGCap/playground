@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import {handleQuery} from '@/engine/utils/query'
 import { EMBEDDING_MODEL } from '@/engine/types';
 
-
+// Routes on the free plan timeout after 5 seconds (504 - error).
 export async function POST(request: NextRequest) {
     const body = await request.json()
     const {query, modelsToRetrieveDocs, generateAnswer} = body;

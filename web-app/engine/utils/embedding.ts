@@ -1,7 +1,7 @@
-import { getInstructorLargeEmbeddings } from '../clients/baseten';
+import { getInstructorLargeEmbeddings, getMPNETBaseEmbeddings } from '../clients/baseten';
 import { getBGELargeEmbeddings } from '../clients/huggingface';
 import { getOpenAIEmbeddings } from '../clients/openai';
-import { getImageBindEmbeddings, getMPNETBaseEmbeddings } from '../clients/replicate';
+import { getImageBindEmbeddings } from '../clients/replicate';
 import { EMBEDDING_MODEL, EmbeddedTextChunk, TextChunk } from '../types';
 
 export const getEmbeddingDimensionForModel = (embeddingModel: EMBEDDING_MODEL) => {
