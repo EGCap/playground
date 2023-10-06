@@ -223,6 +223,7 @@ export default function Home() {
               name="tabs"
               className="block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
               defaultValue={"search"}
+              onChange={(e) => setFormState(e.target.value)}
             >
               {formStates.map((formState) => (
                 <option key={formState}>{formState}</option>
@@ -255,8 +256,8 @@ export default function Home() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center gap-4 p-24">
-      <div className="flex flex-col mx-auto w-1/2">
+    <main className="flex min-h-screen flex-col sm:items-center gap-4 p-4 sm:p-24">
+      <div className="flex flex-col mx-auto w-full sm:w-1/2">
         <div id="title">
           <h1 className="text-4xl font-bold">Embedding Battleground</h1>
         </div>
@@ -349,7 +350,7 @@ export default function Home() {
           </div>
         )}
       </div>
-      <div className="flex flex-row gap-4 mt-6 flex-1">
+      <div className="flex flex-row gap-4 mt-6 overflow-x-auto">
         {queryResponse &&
           queryResponse.data.sort((a: QueryData, b: QueryData) => {
             return modelSorter(a.embeddingModel, b.embeddingModel);
@@ -365,13 +366,13 @@ export default function Home() {
               );
             });
             return (
-              <div className="flex flex-col flex-1" key={idx}>
+              <div className="flex flex-col min-w-[50%] sm:min-w-0 text-xs sm:text-base sm:flex-1" key={idx}>
                 <p>
                   <b>Embedding Model</b>:{" "}
                   {querydata.embeddingModel ? userFriendlyNameByModel.get(querydata.embeddingModel) : 'No context retrieved'}
                 </p>
                 <p><b>Answer</b>: {querydata.answer.response}</p>
-                <div className="flex flex-col gap-4 ">{chunks}</div>
+                <div className="flex flex-col gap-4 sm:flex-1">{chunks}</div>
               </div>
             );
           })}
