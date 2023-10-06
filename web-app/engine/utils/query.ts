@@ -17,7 +17,8 @@ const DEFAULT_MAX_MATCHES: number = 5;
 export const handleQuery = async (
   queryText: string,
   embeddingModels: (EMBEDDING_MODEL | null)[],
-  generateAnswer: boolean = true
+  filterDatasets: DATASET[] | null,
+  generateAnswer: boolean = true,
 ) => {
   let data: QueryData[] = [];
   
@@ -35,6 +36,7 @@ export const handleQuery = async (
           const fetchedDocuments = await fetchNearestDocuments(
             queryEmbedding,
             embeddingModel,
+            filterDatasets,
             DEFAULT_MAX_MATCHES,
             DATABASE.SUPABASE
           );

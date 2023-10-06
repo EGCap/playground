@@ -52,10 +52,12 @@ export const userFriendlyNameByModel = new Map(Object.entries({
 
 export const enabledDatasets = [
     DATASET.WIKIPEDIA,
+    DATASET.CUSTOM,
 ];
 
 export const userFriendlyNameByDataset = new Map(Object.entries({
     [DATASET.WIKIPEDIA]: "Wikipedia",
+    [DATASET.CUSTOM]: "Uploaded Data",
 }));
 
 export enum LANGUAGE_MODEL {

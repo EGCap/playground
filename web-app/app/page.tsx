@@ -61,6 +61,7 @@ export default function Home() {
         query: query,
         generateAnswer: generateAnswer,
         modelsToRetrieveDocs: embeddingChoices,
+        datasets: datasetsChoices,
       }),
     });
 
