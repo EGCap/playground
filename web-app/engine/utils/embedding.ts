@@ -1,4 +1,5 @@
 import { getInstructorLargeEmbeddings, getMPNETBaseEmbeddings } from '../clients/baseten';
+import { getCohereEmbeddings } from '../clients/cohere';
 import { getBGELargeEmbeddings } from '../clients/huggingface';
 import { getOpenAIEmbeddings } from '../clients/openai';
 import { getImageBindEmbeddings } from '../clients/replicate';
@@ -16,6 +17,8 @@ export const getEmbeddingDimensionForModel = (embeddingModel: EMBEDDING_MODEL) =
             return 1024;
         case EMBEDDING_MODEL.INSTRUCTOR_LARGE:
             return 768;
+        case EMBEDDING_MODEL.COHERE:
+            return 1024;
     }
 }
 
@@ -33,6 +36,8 @@ export const getEmbeddingsBatch = async (inputs: string[], embeddingModel: EMBED
                     return getBGELargeEmbeddings(inputs);
                 case EMBEDDING_MODEL.INSTRUCTOR_LARGE:
                     return getInstructorLargeEmbeddings(inputs);
+                case EMBEDDING_MODEL.COHERE:
+                    return getCohereEmbeddings(inputs);
             }
         }
         catch (e) {
