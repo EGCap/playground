@@ -3,6 +3,7 @@ import { getChunkCount, parseData } from '../web-app/engine/utils/data';
 import { embedTextChunks } from '../web-app/engine/utils/embedding';
 import { DATABASE, DATASET, EMBEDDING_MODEL, EmbeddedTextChunk, TextChunk } from '../web-app/engine/types';
 import { uploadEmbeddings } from '../web-app/engine/utils/database';
+import { secondsFrom } from '../web-app/engine/utils/clock';
 import { Command } from 'commander';
 
 dotenv.config();
@@ -91,7 +92,3 @@ async function main() {
 }
 
 main();
-function secondsFrom(loadingStartTime: number) {
-    throw new Error('Function not implemented.');
-}
-

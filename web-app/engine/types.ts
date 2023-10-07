@@ -35,16 +35,21 @@ export enum EMBEDDING_MODEL {
 
     // Models hosted on Baseten.
     INSTRUCTOR_LARGE = 'INSTRUCTOR_LARGE', // dim: 768
+
+    // Cohere's hosted embed-english-light-v2.0 model.
+    COHERE = 'COHERE', // dim: 1024
 }
 
 // Add additional embedding models to enable here
 export const enabledEmbeddingModels: EMBEDDING_MODEL[] = [
+    EMBEDDING_MODEL.COHERE,
     EMBEDDING_MODEL.INSTRUCTOR_LARGE,
     EMBEDDING_MODEL.MPNET_BASE_V2,
     EMBEDDING_MODEL.OPEN_AI,
 ];
   
 export const userFriendlyNameByModel = new Map(Object.entries({
+    [EMBEDDING_MODEL.COHERE]: "cohere-english-light-v2.0",
     [EMBEDDING_MODEL.INSTRUCTOR_LARGE]: "instructor-large",
     [EMBEDDING_MODEL.MPNET_BASE_V2]: "mpnet-base-v2",
     [EMBEDDING_MODEL.OPEN_AI]: "text-ada-002",
