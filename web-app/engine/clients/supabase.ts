@@ -45,7 +45,6 @@ export const getNearestDocumentsFromSupabase = async (
     console.log(`Expected vector of dim ${expectedDim} but got ${queryEmbedding.length}!`);
     return [];
   }
-  console.log(`Datasets: ${filterDatasets}`);
 
   const supabaseFunc = `nearest_documents_for_datasets_${expectedDim}`;
   const { data: results, error } = await supabaseClient.rpc(
