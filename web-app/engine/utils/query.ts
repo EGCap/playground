@@ -9,15 +9,18 @@ import {
 } from "../types";
 import { secondsFrom } from "./clock";
 import { fetchNearestDocuments } from "./database";
-import { getEmbedding } from "./embedding";
+import { getEmbeddingWithTimeLimit } from "./embedding";
 import { getChatModelResponse } from "./inference";
 
-const DEFAULT_MAX_MATCHES: number = 5;
+// We wait 5 seconds for an embedding model response before timing out, due to cold start.
+const EMBEDDING_MODEL_TIME_LIMIT: number = 5000;
 
 export const handleQuery = async (
   queryText: string,
   embeddingModels: (EMBEDDING_MODEL | null)[],
-  generateAnswer: boolean = true
+  filterDatasets: DATASET[] | null,
+  maxDocuments: number,
+  generateAnswer: boolean = true,
 ) => {
   let data: QueryData[] = [];
   
@@ -26,7 +29,7 @@ export const handleQuery = async (
     let modelResponse: string = "";
     if (embeddingModel) {
       const embeddingStartTime = Date.now();
-      const queryEmbedding = await getEmbedding(queryText, embeddingModel);
+      const queryEmbedding = await getEmbeddingWithTimeLimit(queryText, embeddingModel, EMBEDDING_MODEL_TIME_LIMIT);
       console.log(`Retrieved query embedding from ${embeddingModel} in ${secondsFrom(embeddingStartTime)} seconds`);
       
       if (queryEmbedding) {
@@ -35,7 +38,8 @@ export const handleQuery = async (
           const fetchedDocuments = await fetchNearestDocuments(
             queryEmbedding,
             embeddingModel,
-            DEFAULT_MAX_MATCHES,
+            filterDatasets,
+            maxDocuments,
             DATABASE.SUPABASE
           );
           documents = fetchedDocuments;

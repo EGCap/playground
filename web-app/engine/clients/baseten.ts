@@ -24,6 +24,5 @@ export const getInstructorLargeEmbeddings = async (inputs: string[]) => {
 
 
 export const getMPNETBaseEmbeddings = async (inputs: string[]) => {
-    console.log("getMPNETBaseEmbeddings from baseten!!")
     return await getBasetenEmbeddings(inputs, 'ZBAg31P')
 }

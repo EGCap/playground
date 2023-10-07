@@ -13,6 +13,9 @@ import {
 } from "@/engine/types";
 import { FormEvent, useState } from "react";
 
+const DEFAULT_MAX_DOCUMENTS: number = 5;
+const MAX_DOCUMENTS_UPPER_BOUND: number = 20;
+
 // Used for determinstic ordering of models / results.
 const modelSorter = (model1: string | null, model2: string | null) => {
   const idx1 = model1 ? enabledEmbeddingModels.indexOf(EMBEDDING_MODEL[model1 as keyof typeof EMBEDDING_MODEL]) : -1;
@@ -45,12 +48,19 @@ export default function Home() {
   const [loading, setLoading] = useState<boolean>(false);
   const [uploadText, setUploadText] = useState<string>("");
   const [formState, setFormState] = useState<string>("Search");
+  const [maxDocuments, setMaxDocuments] = useState<number>(DEFAULT_MAX_DOCUMENTS);
 
   async function runQuery() {
     if (!query) {
-      alert("Please enter a query");
+      alert("Please enter a query.");
       return;
     }
+
+    if (!Number.isInteger(maxDocuments) || maxDocuments <= 0 || maxDocuments > MAX_DOCUMENTS_UPPER_BOUND) {
+      alert(`Please enter a value between 1 and ${MAX_DOCUMENTS_UPPER_BOUND} for the number of documents to fetch.`);
+      return;
+    }
+
     setLoading(true);
     const response = await fetch("/api/query", {
       method: "POST",
@@ -61,6 +71,8 @@ export default function Home() {
         query: query,
         generateAnswer: generateAnswer,
         modelsToRetrieveDocs: embeddingChoices,
+        datasets: datasetsChoices,
+        maxDocuments: maxDocuments,
       }),
     });
 
@@ -72,6 +84,10 @@ export default function Home() {
   const handleCheckboxChange = () => {
     setGenerateAnswer(!generateAnswer);
   };
+
+  const handleMaxDocumentsChange = (event: FormEvent<HTMLInputElement>) => {
+    setMaxDocuments(Number(event.currentTarget.value));
+  }
 
   const handleQueryChange = (event: FormEvent<HTMLInputElement>) => {
     setQuery(event.currentTarget.value);
@@ -304,13 +320,27 @@ export default function Home() {
                 {/* Additional options */}
                 <div className="leading-6 mt-2">
                   <p className="font-bold">Extra:</p>
-                  <input
-                    type="checkbox"
-                    className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-600"
-                    checked={generateAnswer}
-                    onChange={handleCheckboxChange}
-                  />
-                  <label className="ml-2">Generate an Answer (RAG)?</label>
+                  <div>
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-600"
+                      checked={generateAnswer}
+                      onChange={handleCheckboxChange}
+                    />
+                    <label className="ml-2">Generate an Answer (RAG)?</label>
+                  </div>
+                  <div>
+                    <input
+                      type="number"
+                      min="1"
+                      max={MAX_DOCUMENTS_UPPER_BOUND}
+                      step="1"
+                      className="h-8 rounded border-gray-300 focus:ring-emerald-600"
+                      value={maxDocuments}
+                      onChange={handleMaxDocumentsChange}
+                    />
+                    <label className="ml-2">Number of Documents to Fetch</label>
+                  </div>
                 </div>
               </div>
             </div>

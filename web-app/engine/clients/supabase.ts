@@ -37,6 +37,7 @@ export const uploadEmbeddingsToSupabase = async (
 export const getNearestDocumentsFromSupabase = async (
   queryEmbedding: number[],
   embeddingModel: EMBEDDING_MODEL,
+  filterDatasets: DATASET[] | null,
   maxMatches: number
 ) => {
   const expectedDim = getEmbeddingDimensionForModel(embeddingModel);
@@ -45,12 +46,13 @@ export const getNearestDocumentsFromSupabase = async (
     return [];
   }
 
-  const supabaseFunc = `nearest_documents_${expectedDim}`;
+  const supabaseFunc = `nearest_documents_for_datasets_${expectedDim}`;
   const { data: results, error } = await supabaseClient.rpc(
     supabaseFunc,
     {
       query_embedding: queryEmbedding,
       query_embedding_model: EMBEDDING_MODEL[embeddingModel],
+      query_datasets: filterDatasets,
       max_matches: maxMatches,
     }
   );

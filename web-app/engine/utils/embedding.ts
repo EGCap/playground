@@ -51,6 +51,17 @@ export const getEmbedding = async (input: string, embeddingModel: EMBEDDING_MODE
     }
 }
 
+export const getEmbeddingWithTimeLimit = async (input: string, embeddingModel: EMBEDDING_MODEL, timeLimitInMilliseconds: number) => {
+    const embeddingPromise = getEmbedding(input, embeddingModel);
+    const timeLimitPromise = new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+            resolve(null);
+        }, timeLimitInMilliseconds);
+    });
+    const embedding = await Promise.race([embeddingPromise, timeLimitPromise]);
+    return embedding as number[];
+}
+
 export const embedTextChunks = async (
     textChunks: TextChunk[], embeddingModel: EMBEDDING_MODEL, batchSize: number
 ) => {
