@@ -19,9 +19,9 @@ export const parseData = async (
                     textToEmbed: parsedLine.toEmbed,
                     chunkIndex: i,
                     document: {
-                        rawText: parsedLine.value.text,
-                        title: parsedLine.value.title,
-                        url: parsedLine.value.url,
+                        rawText: parsedLine.value?.text ?? "",
+                        title: parsedLine.value?.title ?? "",
+                        url: parsedLine.value?.url ?? "",
                     }
                 } as TextChunk;
                 chunks.push(chunk);
