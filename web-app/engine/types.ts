@@ -16,6 +16,8 @@ export type EmbeddedTextChunk = {
 export enum DATASET {
     WIKIPEDIA = 'WIKIPEDIA',
     CUSTOM = 'CUSTOM',
+    // Elad's High Growth Handbook
+    HGH = 'HGH',
 }
 
 export enum DATABASE {
