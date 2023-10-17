@@ -22,7 +22,8 @@ async function main() {
         .option('-s, --start <startChunkIndex>', 'Index of first chunk to embed', '0')
         .option('-n, --chunks <numChunks>', 'Number of chunks to embed')
         .option('-e, --embedbatchsize <embedBatchSize>', 'Number of chunks to embed per API call', '1')
-        .option('-u, --uploadbatchsize <uploadBatchSize>', 'Number of chunks to upload to DB per API call', '100');
+        .option('-u, --uploadbatchsize <uploadBatchSize>', 'Number of chunks to upload to DB per API call', '100')
+        .option('-p, --profiler', 'Output profiler stats only');
     
     program.parse();
 
@@ -46,6 +47,8 @@ async function main() {
     const startChunkIndex: number = Number(options.start);
     const embedBatchSize: number = Number(options.embedbatchsize);
     const uploadBatchSize: number = Number(options.uploadbatchsize);
+    const profileOnly: boolean = Boolean(options.profiler);
+    console.log(profileOnly);
 
     let endChunkIndex: number = 0;
     if (options.chunks) {
@@ -57,6 +60,7 @@ async function main() {
     console.log(`Uploading data from ${startChunkIndex} to ${endChunkIndex} in batches of ${uploadBatchSize} with embedding batch size ${embedBatchSize}.`)
 
     const overallStartTime = Date.now();
+    let totalEmbeddingTime = 0;
 
     // Loop through upload batches
     for(let startBatchIndex = startChunkIndex; startBatchIndex <= endChunkIndex; startBatchIndex += uploadBatchSize) {
@@ -73,22 +77,27 @@ async function main() {
             console.error(`Some text chunks failed to embed: ${startBatchIndex} to ${endBatchIndex}`);
             return;
         } else {
-            console.log(`Embedding complete in ${secondsFrom(embeddingStartTime)} seconds`);
+            const embeddingSeconds: number = secondsFrom(embeddingStartTime);
+            console.log(`Embedding complete in ${embeddingSeconds} seconds`);
+            totalEmbeddingTime += embeddingSeconds;
         }
 
         // Upload embeddings to database
-        const uploadStartTime = Date.now();
-        const error = await uploadEmbeddings(embeddedTextChunks, dataset, embeddingModel, DATABASE.SUPABASE)
-        if (error) {
-            console.error(`Upload failure: ${startBatchIndex} to ${endBatchIndex}`);
-            console.error(error);
-            return;
-        } else {
-            console.log(`Upload: ${startBatchIndex} to ${endBatchIndex} complete in ${secondsFrom(uploadStartTime)} seconds`);
+        if (!profileOnly) {
+            const uploadStartTime = Date.now();
+            const error = await uploadEmbeddings(embeddedTextChunks, dataset, embeddingModel, DATABASE.SUPABASE)
+            if (error) {
+                console.error(`Upload failure: ${startBatchIndex} to ${endBatchIndex}`);
+                console.error(error);
+                return;
+            } else {
+                console.log(`Upload: ${startBatchIndex} to ${endBatchIndex} complete in ${secondsFrom(uploadStartTime)} seconds`);
+            }
         }
     }
 
     console.log(`\n\nScript finished running in ${secondsFrom(overallStartTime)} seconds.`);
+    console.log(`\nTotal Embedding time: ${totalEmbeddingTime} seconds.`);
 }
 
 main();
