@@ -283,6 +283,8 @@ export default function Home() {
             <a className="hover-link" href="https://twitter.com/shreyanj98">Shreyan Jain</a>, {" "}
             <a className="hover-link" href="https://twitter.com/davidtsong">David Song</a>, and {" "}
             <a className="hover-link" href="https://twitter.com/eladgil">Elad Gil</a>
+            . Source code {" "}
+            <a className="hover-link" href="https://github.com/EGCap/playground">here</a>.
           </h3>
         </div>
 
@@ -292,16 +294,6 @@ export default function Home() {
 
         {formState === "Search" && (
           <div className="flex flex-col gap-2 mt-4">
-            <label htmlFor="queryString">Search for relevant documents</label>
-            <input
-              type="text"
-              className="border-black p-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 sm:text-sm sm:leading-6 focus:border-emerald-300 focus:ring-emerald-500"
-              autoComplete="off"
-              size={75}
-              name="queryString"
-              onChange={handleQueryChange}
-            />
-
             <div className="flex flex-row gap-12">
               <div>
                 {/* Embedding models */}
@@ -344,6 +336,16 @@ export default function Home() {
                 </div>
               </div>
             </div>
+
+            <label htmlFor="queryString">Search for relevant documents</label>
+            <input
+              type="text"
+              className="border-black p-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 sm:text-sm sm:leading-6 focus:border-emerald-300 focus:ring-emerald-500"
+              autoComplete="off"
+              size={75}
+              name="queryString"
+              onChange={handleQueryChange}
+            />
 
             <button
               className="bg-primary text-teal-950 font-bold py-2 px-4 rounded mt-6"
