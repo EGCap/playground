@@ -1,6 +1,6 @@
 # Embedding playground
 
-Introducing [embeds.ai](embeds.ai): an embedding playground and battleground
+Introducing [embeds.ai](https://embeds.ai): an embedding playground and battleground
 
 Compare how embedding models work on a real world use case (retrieval augmented generation for Wikipedia articles).
 
