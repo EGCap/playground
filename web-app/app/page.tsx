@@ -33,7 +33,7 @@ const initialDatasetChoices = enabledDatasets.reduce((acc, dataset) => {
   return { ...acc, [dataset]: true };
 }, {});
 
-//const formStates = ["Search", "Upload"];
+// const formStates = ["Search", "Upload"];
 const formStates = ["Search"];
 
 export default function Home() {
