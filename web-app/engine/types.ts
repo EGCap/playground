@@ -21,7 +21,8 @@ export enum DATASET {
 }
 
 export enum DATABASE {
-    SUPABASE = 'SUPABASE'
+    SUPABASE = 'SUPABASE',
+    NEON = 'NEON',
 }
 
 export enum EMBEDDING_MODEL {

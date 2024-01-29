@@ -19,6 +19,7 @@ async function main() {
         .argument('<filename>', 'Path to file containing raw data to embed')
         .argument('<datasetName>', 'Name of dataset to embed')
         .argument('<embeddingModelName>', 'Embedding model to use')
+        .argument('<databaseProvider>', 'Database provider to use')
         .option('-s, --start <startChunkIndex>', 'Index of first chunk to embed', '0')
         .option('-n, --chunks <numChunks>', 'Number of chunks to embed')
         .option('-e, --embedbatchsize <embedBatchSize>', 'Number of chunks to embed per API call', '1')
@@ -30,6 +31,7 @@ async function main() {
     const filename: string = program.args[0];
     const datasetName: string = program.args[1];
     const embeddingModelName: string = program.args[2];
+    const databaseProvider: string = program.args[3];
 
     if (!Object.values(DATASET).includes(datasetName as DATASET)) {
         console.log("Please provide a valid dataset name");
@@ -42,6 +44,12 @@ async function main() {
         return;
     }
     const embeddingModel: EMBEDDING_MODEL = EMBEDDING_MODEL[embeddingModelName as keyof typeof EMBEDDING_MODEL];
+
+    if (!Object.values(DATABASE).includes(databaseProvider as DATABASE)) {
+        console.log("Please provide a valid database provider");
+        return;
+    }
+    const database: DATABASE = DATABASE[databaseProvider as keyof typeof DATABASE];
     
     const options = program.opts();
     const startChunkIndex: number = Number(options.start);
@@ -85,7 +93,7 @@ async function main() {
         // Upload embeddings to database
         if (!profileOnly) {
             const uploadStartTime = Date.now();
-            const error = await uploadEmbeddings(embeddedTextChunks, dataset, embeddingModel, DATABASE.SUPABASE)
+            const error = await uploadEmbeddings(embeddedTextChunks, dataset, embeddingModel, database)
             if (error) {
                 console.error(`Upload failure: ${startBatchIndex} to ${endBatchIndex}`);
                 console.error(error);

@@ -16,3 +16,6 @@ export const BASETEN_API_KEY: string = process.env.BASETEN_API_KEY as string;
 
 // Cohere
 export const COHERE_API_KEY: string = process.env.COHERE_API_KEY as string;
+
+// Neon
+export const NEON_URL: string = process.env.NEON_URL as string;

@@ -1,3 +1,4 @@
+import { getNearestDocumentsFromNeon, uploadEmbeddingsToNeon } from "../clients/neon";
 import { getNearestDocumentsFromSupabase, uploadEmbeddingsToSupabase } from "../clients/supabase";
 import { EmbeddedTextChunk, DATABASE, EMBEDDING_MODEL, DATASET } from "../types";
 
@@ -10,6 +11,8 @@ export const uploadEmbeddings = async (
     switch (database as DATABASE) {
         case DATABASE.SUPABASE:
             return await uploadEmbeddingsToSupabase(embeddedChunks, dataset, embeddingModel);
+        case DATABASE.NEON:
+            return await uploadEmbeddingsToNeon(embeddedChunks, dataset, embeddingModel);
     }
 }
 
@@ -23,5 +26,7 @@ export const fetchNearestDocuments = async (
     switch (database as DATABASE) {
         case DATABASE.SUPABASE:
             return await getNearestDocumentsFromSupabase(queryEmbedding, embeddingModel, filterDatasets, maxMatches);
+        case DATABASE.NEON:
+            return await getNearestDocumentsFromNeon(queryEmbedding, embeddingModel, filterDatasets, maxMatches);
     }
 }
