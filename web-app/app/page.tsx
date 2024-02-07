@@ -12,6 +12,7 @@ import {
   userFriendlyNameByModel,
 } from "@/engine/types";
 import { FormEvent, useState } from "react";
+import { SignInButton, UserButton } from "@clerk/nextjs";
 
 const DEFAULT_MAX_DOCUMENTS: number = 5;
 const MAX_DOCUMENTS_UPPER_BOUND: number = 20;
@@ -274,6 +275,8 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col sm:items-center gap-4 p-4 sm:p-24">
+      <UserButton showName={true} afterSignOutUrl="/"/>
+      <SignInButton></SignInButton>
       <div className="flex flex-col mx-auto w-full sm:w-1/2">
         <div id="title">
           <h1 className="text-4xl font-bold">Embedding Battleground</h1>
