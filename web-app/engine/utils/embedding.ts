@@ -3,6 +3,7 @@ import { getCohereEmbeddings } from '../clients/cohere';
 import { getBGELargeEmbeddings } from '../clients/huggingface';
 import { getOpenAIEmbeddings } from '../clients/openai';
 import { getImageBindEmbeddings } from '../clients/replicate';
+import { getTogetherAIEmbeddings } from '../clients/togetherai'; // Added import for Together AI embeddings
 import { EMBEDDING_MODEL, EmbeddedTextChunk, TextChunk } from '../types';
 
 export const getEmbeddingDimensionForModel = (embeddingModel: EMBEDDING_MODEL) => {
@@ -19,6 +20,8 @@ export const getEmbeddingDimensionForModel = (embeddingModel: EMBEDDING_MODEL) =
             return 768;
         case EMBEDDING_MODEL.COHERE:
             return 1024;
+        case EMBEDDING_MODEL.TOGETHER_AI: // Added case for Together AI
+            return 2048; // Assuming the dimension based on the model name
     }
 }
 
@@ -38,6 +41,11 @@ export const getEmbeddingsBatch = async (inputs: string[], embeddingModel: EMBED
                     return getInstructorLargeEmbeddings(inputs);
                 case EMBEDDING_MODEL.COHERE:
                     return getCohereEmbeddings(inputs);
+                case EMBEDDING_MODEL.TOGETHER_AI: // Added case for Together AI
+                    return getTogetherAIEmbeddings(inputs).then(embeddings => {
+                        console.log(`Successfully retrieved ${embeddings.length} embeddings from Together AI model`);
+                        return embeddings;
+                    });
             }
         }
         catch (e) {

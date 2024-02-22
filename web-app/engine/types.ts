@@ -40,6 +40,9 @@ export enum EMBEDDING_MODEL {
 
     // Cohere's hosted embed-english-light-v2.0 model.
     COHERE = 'COHERE', // dim: 1024
+
+    // Together AI's hosted m2-bert-80M-2k-retrieval model.
+    TOGETHER_AI = 'TOGETHER_AI', // dim: 2048
 }
 
 // Add additional embedding models to enable here
@@ -48,13 +51,15 @@ export const enabledEmbeddingModels: EMBEDDING_MODEL[] = [
     EMBEDDING_MODEL.INSTRUCTOR_LARGE,
     EMBEDDING_MODEL.MPNET_BASE_V2,
     EMBEDDING_MODEL.OPEN_AI,
+    EMBEDDING_MODEL.TOGETHER_AI,
 ];
-  
+
 export const userFriendlyNameByModel = new Map(Object.entries({
     [EMBEDDING_MODEL.COHERE]: "cohere-english-light-v2.0",
     [EMBEDDING_MODEL.INSTRUCTOR_LARGE]: "instructor-large",
     [EMBEDDING_MODEL.MPNET_BASE_V2]: "mpnet-base-v2",
     [EMBEDDING_MODEL.OPEN_AI]: "text-ada-002",
+    [EMBEDDING_MODEL.TOGETHER_AI]: "togethercomputer/m2-bert-80M-2k-retrieval",
 }));
 
 export const enabledDatasets = [
