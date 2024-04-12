@@ -12,6 +12,7 @@ import {
   userFriendlyNameByModel,
 } from "@/engine/types";
 import { FormEvent, useState } from "react";
+import { getSignInUrl, getUser, signOut } from "@workos-inc/authkit-nextjs";
 
 const DEFAULT_MAX_DOCUMENTS: number = 5;
 const MAX_DOCUMENTS_UPPER_BOUND: number = 20;
@@ -36,7 +37,10 @@ const initialDatasetChoices = enabledDatasets.reduce((acc, dataset) => {
 // const formStates = ["Search", "Upload"];
 const formStates = ["Search"];
 
-export default function Home() {
+export default async function Home() {
+  const { user } = await getUser();
+  const authorizationUrl = await getSignInUrl();
+
   const [generateAnswer, setGenerateAnswer] = useState<boolean>(false);
   const [query, setQuery] = useState<string>("");
   const [embeddingChoices, setEmbeddingChoices] = useState<{
