@@ -12,6 +12,7 @@ import {
   userFriendlyNameByModel,
 } from "@/engine/types";
 import { FormEvent, useState } from "react";
+import { withPageAuthRequired } from '@auth0/nextjs-auth0/client';
 
 const DEFAULT_MAX_DOCUMENTS: number = 5;
 const MAX_DOCUMENTS_UPPER_BOUND: number = 20;
@@ -36,7 +37,7 @@ const initialDatasetChoices = enabledDatasets.reduce((acc, dataset) => {
 // const formStates = ["Search", "Upload"];
 const formStates = ["Search"];
 
-export default function Home() {
+export default withPageAuthRequired(function Home() {
   const [generateAnswer, setGenerateAnswer] = useState<boolean>(false);
   const [query, setQuery] = useState<string>("");
   const [embeddingChoices, setEmbeddingChoices] = useState<{
@@ -275,6 +276,8 @@ export default function Home() {
   return (
     <main className="flex min-h-screen flex-col sm:items-center gap-4 p-4 sm:p-24">
       <div className="flex flex-col mx-auto w-full sm:w-1/2">
+        <a href="/api/auth/login">Login</a>
+        <a href="/api/auth/logout">Logout</a>
         <div id="title">
           <h1 className="text-4xl font-bold">Embedding Battleground</h1>
         </div>
@@ -412,4 +415,4 @@ export default function Home() {
       </div>
     </main>
   );
-}
+});
