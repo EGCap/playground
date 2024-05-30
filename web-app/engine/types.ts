@@ -1,5 +1,6 @@
 export type TextChunk = {
     textToEmbed: string,
+    numTokens: number,
     chunkIndex: number | null,
     document: {
         rawText: string,
@@ -14,10 +15,17 @@ export type EmbeddedTextChunk = {
 }
 
 export enum DATASET {
+    // Simple Wikipedia dataset from HF
     WIKIPEDIA = 'WIKIPEDIA',
-    CUSTOM = 'CUSTOM',
+
+    // Version of Simple Wikipedia where every article is clipped to first 200 tokens
+    WIKIPEDIA_CLIPPED = 'WIKIPEDIA_CLIPPED',
+
     // Elad's High Growth Handbook
     HGH = 'HGH',
+
+    // Data uploaded through web dashboard
+    CUSTOM = 'CUSTOM',
 }
 
 export enum DATABASE {
@@ -25,8 +33,20 @@ export enum DATABASE {
 }
 
 export enum EMBEDDING_MODEL {
-    // OpenAI's hosted text-embedding-ada-002 model.
-    OPEN_AI = 'OPEN_AI', // dim: 1536
+    // OpenAI's hosted text-embedding-3-large model.
+    OPEN_AI = 'OPEN_AI', // dim: 3072
+
+    // Cohere's hosted embed-english-v3.0 model.
+    COHERE = 'COHERE', // dim: 1024
+
+    // Voyage's hosted voyage-large-2-instruct model.
+    VOYAGE = 'VOYAGE', // dim: 1024
+
+    // Jina's hosted jina-embeddings-v2-base-en model.
+    JINA = 'JINA', // dim: 768
+
+    // Nomic's hosted nomic-embed-text-v1 model.
+    NOMIC = 'NOMIC', // dim: 768
 
     // Models hosted on HuggingFace, taken from the MTEB leaderboard.
     BGE_LARGE_1_5 = 'BGE_LARGE_1_5', // dim: 1024
@@ -37,36 +57,72 @@ export enum EMBEDDING_MODEL {
 
     // Models hosted on Baseten.
     INSTRUCTOR_LARGE = 'INSTRUCTOR_LARGE', // dim: 768
+}
 
-    // Cohere's hosted embed-english-light-v2.0 model.
-    COHERE = 'COHERE', // dim: 1024
+export enum RERANKING_MODEL {
+    // Don't rerank retrieved documents.
+    NONE = 'NONE',
+    
+    // Cohere's hosted rerank-english-v3.0 model.
+    COHERE = 'COHERE',
+
+    // Voyage's hosted rerank-1 model.
+    VOYAGE = 'VOYAGE',
+
+    // Jina's hosted jina-reranker-v1-base-en model.
+    JINA = 'JINA',
 }
 
 // Add additional embedding models to enable here
 export const enabledEmbeddingModels: EMBEDDING_MODEL[] = [
-    EMBEDDING_MODEL.COHERE,
-    EMBEDDING_MODEL.INSTRUCTOR_LARGE,
-    EMBEDDING_MODEL.MPNET_BASE_V2,
     EMBEDDING_MODEL.OPEN_AI,
+    EMBEDDING_MODEL.COHERE,
+    EMBEDDING_MODEL.VOYAGE,
+    EMBEDDING_MODEL.JINA,
+    EMBEDDING_MODEL.NOMIC,
 ];
   
-export const userFriendlyNameByModel = new Map(Object.entries({
-    [EMBEDDING_MODEL.COHERE]: "cohere-english-light-v2.0",
+export const modelNameByProvider = new Map(Object.entries({
+    [EMBEDDING_MODEL.OPEN_AI]: "OpenAI (text-embedding-3-large)",
+    [EMBEDDING_MODEL.COHERE]: "Cohere (embed-english-v3.0)",
+    [EMBEDDING_MODEL.VOYAGE]: "Voyage (voyage-large-2-instruct)",
+    [EMBEDDING_MODEL.JINA]: "Jina (jina-embeddings-v2-base-en)",
+    [EMBEDDING_MODEL.NOMIC]: "Nomic (nomic-embed-text-v1)",
     [EMBEDDING_MODEL.INSTRUCTOR_LARGE]: "instructor-large",
     [EMBEDDING_MODEL.MPNET_BASE_V2]: "mpnet-base-v2",
-    [EMBEDDING_MODEL.OPEN_AI]: "text-ada-002",
 }));
 
 export const enabledDatasets = [
     DATASET.WIKIPEDIA,
+    DATASET.WIKIPEDIA_CLIPPED,
     DATASET.HGH,
 ];
 
 export const userFriendlyNameByDataset = new Map(Object.entries({
     [DATASET.WIKIPEDIA]: "Wikipedia",
+    [DATASET.WIKIPEDIA_CLIPPED]: "Clipped Wikipedia",
     [DATASET.CUSTOM]: "Uploaded Data",
     [DATASET.HGH]: "High Growth Handbook",
 }));
+
+export const enabledRerankingModels: RERANKING_MODEL[] = [
+    RERANKING_MODEL.NONE,
+    RERANKING_MODEL.COHERE,
+    RERANKING_MODEL.VOYAGE,
+    RERANKING_MODEL.JINA,
+];
+  
+export const rerankingModelNameByProvider = new Map(Object.entries({
+    [RERANKING_MODEL.NONE]: "No reranking",
+    [RERANKING_MODEL.COHERE]: "Cohere (rerank-english-v3.0)",
+    [RERANKING_MODEL.VOYAGE]: "Voyage (rerank-1)",
+    [RERANKING_MODEL.JINA]: "Jina (jina-reranker-v1-base-en)",
+}));
+
+export enum EMBEDDING_INPUT_TYPE {
+    QUERY = "QUERY",
+    DOCUMENT = "DOCUMENT",
+}
 
 export enum LANGUAGE_MODEL {
     // OpenAI's GPT-3.5-Turbo model.

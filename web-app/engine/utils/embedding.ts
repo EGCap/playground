@@ -1,14 +1,17 @@
 import { getInstructorLargeEmbeddings, getMPNETBaseEmbeddings } from '../clients/baseten';
 import { getCohereEmbeddings } from '../clients/cohere';
 import { getBGELargeEmbeddings } from '../clients/huggingface';
+import { getJinaEmbeddings } from '../clients/jina';
+import { getNomicEmbeddings } from '../clients/nomic';
 import { getOpenAIEmbeddings } from '../clients/openai';
 import { getImageBindEmbeddings } from '../clients/replicate';
-import { EMBEDDING_MODEL, EmbeddedTextChunk, TextChunk } from '../types';
+import { getVoyageEmbeddings } from '../clients/voyage';
+import { EMBEDDING_MODEL, EmbeddedTextChunk, EMBEDDING_INPUT_TYPE, TextChunk } from '../types';
 
 export const getEmbeddingDimensionForModel = (embeddingModel: EMBEDDING_MODEL) => {
     switch (embeddingModel as EMBEDDING_MODEL) {
         case EMBEDDING_MODEL.OPEN_AI:
-            return 1536;
+            return 3072;
         case EMBEDDING_MODEL.IMAGEBIND:
             return 1024;
         case EMBEDDING_MODEL.MPNET_BASE_V2:
@@ -19,10 +22,21 @@ export const getEmbeddingDimensionForModel = (embeddingModel: EMBEDDING_MODEL) =
             return 768;
         case EMBEDDING_MODEL.COHERE:
             return 1024;
+        case EMBEDDING_MODEL.VOYAGE:
+            return 1024;
+        case EMBEDDING_MODEL.JINA:
+            return 768;
+        case EMBEDDING_MODEL.NOMIC:
+            return 768;
+        
     }
 }
 
-export const getEmbeddingsBatch = async (inputs: string[], embeddingModel: EMBEDDING_MODEL) => {
+export const getEmbeddingsBatch = async (
+    inputs: string[],
+    embeddingModel: EMBEDDING_MODEL,
+    inputType: EMBEDDING_INPUT_TYPE,
+) => {
     for (let i = 0; i < 4; i++) {
         try {
             switch (embeddingModel as EMBEDDING_MODEL) {
@@ -37,7 +51,13 @@ export const getEmbeddingsBatch = async (inputs: string[], embeddingModel: EMBED
                 case EMBEDDING_MODEL.INSTRUCTOR_LARGE:
                     return getInstructorLargeEmbeddings(inputs);
                 case EMBEDDING_MODEL.COHERE:
-                    return getCohereEmbeddings(inputs);
+                    return getCohereEmbeddings(inputs, inputType);
+                case EMBEDDING_MODEL.VOYAGE:
+                    return getVoyageEmbeddings(inputs, inputType);
+                case EMBEDDING_MODEL.JINA:
+                    return getJinaEmbeddings(inputs);
+                case EMBEDDING_MODEL.NOMIC:
+                    return getNomicEmbeddings(inputs, inputType);
             }
         }
         catch (e) {
@@ -47,8 +67,12 @@ export const getEmbeddingsBatch = async (inputs: string[], embeddingModel: EMBED
     }
 }
 
-export const getEmbedding = async (input: string, embeddingModel: EMBEDDING_MODEL) => {
-    const embeddings: number[][] = await getEmbeddingsBatch([input], embeddingModel);
+export const getEmbedding = async (
+    input: string,
+    embeddingModel: EMBEDDING_MODEL,
+    inputType: EMBEDDING_INPUT_TYPE,
+) => {
+    const embeddings: number[][] = await getEmbeddingsBatch([input], embeddingModel, inputType);
     if (embeddings && embeddings.length > 0) {
         return embeddings[0];
     } else {
@@ -56,8 +80,13 @@ export const getEmbedding = async (input: string, embeddingModel: EMBEDDING_MODE
     }
 }
 
-export const getEmbeddingWithTimeLimit = async (input: string, embeddingModel: EMBEDDING_MODEL, timeLimitInMilliseconds: number) => {
-    const embeddingPromise = getEmbedding(input, embeddingModel);
+export const getEmbeddingWithTimeLimit = async (
+    input: string,
+    embeddingModel: EMBEDDING_MODEL,
+    inputType: EMBEDDING_INPUT_TYPE,
+    timeLimitInMilliseconds: number,
+) => {
+    const embeddingPromise = getEmbedding(input, embeddingModel, inputType);
     const timeLimitPromise = new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
             resolve(null);
@@ -68,7 +97,10 @@ export const getEmbeddingWithTimeLimit = async (input: string, embeddingModel: E
 }
 
 export const embedTextChunks = async (
-    textChunks: TextChunk[], embeddingModel: EMBEDDING_MODEL, batchSize: number
+    textChunks: TextChunk[],
+    embeddingModel: EMBEDDING_MODEL,
+    inputType: EMBEDDING_INPUT_TYPE,
+    batchSize: number,
 ) => {
     // Create the batches
     let i = 0;
@@ -87,7 +119,8 @@ export const embedTextChunks = async (
         const endIdx = Math.min(startIdx + batchSize, textChunks.length);
         const embeddings = await getEmbeddingsBatch(
             textChunks.slice(startIdx, endIdx).map(textChunk => textChunk.textToEmbed),
-            embeddingModel
+            embeddingModel,
+            inputType,
         );
 
         // Update result array only if all embeddings succeeded

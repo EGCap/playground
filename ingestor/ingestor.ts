@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import { getChunkCount, parseData } from '../web-app/engine/utils/data';
 import { embedTextChunks } from '../web-app/engine/utils/embedding';
-import { DATABASE, DATASET, EMBEDDING_MODEL, EmbeddedTextChunk, TextChunk } from '../web-app/engine/types';
+import { DATABASE, DATASET, EMBEDDING_INPUT_TYPE, EMBEDDING_MODEL, EmbeddedTextChunk, TextChunk } from '../web-app/engine/types';
 import { uploadEmbeddings } from '../web-app/engine/utils/database';
 import { secondsFrom } from '../web-app/engine/utils/clock';
 import { Command } from 'commander';
@@ -23,7 +23,7 @@ async function main() {
         .option('-n, --chunks <numChunks>', 'Number of chunks to embed')
         .option('-e, --embedbatchsize <embedBatchSize>', 'Number of chunks to embed per API call', '1')
         .option('-u, --uploadbatchsize <uploadBatchSize>', 'Number of chunks to upload to DB per API call', '100')
-        .option('-p, --profiler', 'Output profiler stats only');
+        .option('-p, --profiler', 'Output profiler stats only')
     
     program.parse();
 
@@ -61,18 +61,25 @@ async function main() {
 
     const overallStartTime = Date.now();
     let totalEmbeddingTime = 0;
+    let totalTokenCount = 0;
 
     // Loop through upload batches
     for(let startBatchIndex = startChunkIndex; startBatchIndex <= endChunkIndex; startBatchIndex += uploadBatchSize) {
         // Load batch of text chunks to embed and upload
         const loadingStartTime = Date.now();
         const endBatchIndex = Math.min(startBatchIndex + uploadBatchSize - 1, endChunkIndex);
-        const textChunks: TextChunk[] = await parseData(filename, startBatchIndex, endBatchIndex);
+        let textChunks: TextChunk[];
+        if (dataset == DATASET.WIKIPEDIA_CLIPPED) {
+            textChunks = await parseData(filename, startBatchIndex, endBatchIndex, 250);
+        } else {
+            textChunks = await parseData(filename, startBatchIndex, endBatchIndex);
+        }
         console.log(`Loaded ${textChunks.length} text chunks in ${secondsFrom(loadingStartTime)} seconds`);
+        totalTokenCount += textChunks.reduce((numTokens, currentChunk) => numTokens + currentChunk.numTokens, 0);
         
         // Embed the textchunks
         const embeddingStartTime = Date.now();
-        const embeddedTextChunks: EmbeddedTextChunk[] = await embedTextChunks(textChunks, embeddingModel, embedBatchSize);
+        const embeddedTextChunks: EmbeddedTextChunk[] = await embedTextChunks(textChunks, embeddingModel, EMBEDDING_INPUT_TYPE.DOCUMENT, embedBatchSize);
         if (embeddedTextChunks.some((x) => !x) || embeddedTextChunks.length != textChunks.length) {
             console.error(`Some text chunks failed to embed: ${startBatchIndex} to ${endBatchIndex}`);
             return;
@@ -97,7 +104,9 @@ async function main() {
     }
 
     console.log(`\n\nScript finished running in ${secondsFrom(overallStartTime)} seconds.`);
-    console.log(`\nTotal Embedding time: ${totalEmbeddingTime} seconds.`);
+    console.log(`\nTotal Embedding Time: ${totalEmbeddingTime} seconds.`);
+    console.log(`\nTotal Tokens Embedded: ${totalTokenCount} tokens.`);
+    console.log(`\nAverage Throughput: ${totalTokenCount / totalEmbeddingTime} tokens per second`);
 }
 
 main();

@@ -1,10 +1,12 @@
 import {
   DATABASE,
   DATASET,
+  EMBEDDING_INPUT_TYPE,
   EMBEDDING_MODEL,
   LANGUAGE_MODEL,
   QueryData,
   QueryResponse,
+  RERANKING_MODEL,
   RetrievedDocument,
 } from "../types";
 import { secondsFrom } from "./clock";
@@ -19,17 +21,23 @@ export const handleQuery = async (
   queryText: string,
   embeddingModels: (EMBEDDING_MODEL | null)[],
   filterDatasets: DATASET[] | null,
+  rerankingModel: RERANKING_MODEL,
   maxDocuments: number,
   generateAnswer: boolean = true,
 ) => {
   let data: QueryData[] = [];
+
+  // If we will rerank, fetch 2N the number of documents before reranking.
+  const numDocsToFetch = rerankingModel == RERANKING_MODEL.NONE ? maxDocuments : 2 * maxDocuments;
   
   await Promise.all(embeddingModels.map(async (embeddingModel) => {
     let documents: RetrievedDocument[] = [];
     let modelResponse: string = "";
     if (embeddingModel) {
       const embeddingStartTime = Date.now();
-      const queryEmbedding = await getEmbeddingWithTimeLimit(queryText, embeddingModel, EMBEDDING_MODEL_TIME_LIMIT);
+      const queryEmbedding = await getEmbeddingWithTimeLimit(
+        queryText, embeddingModel, EMBEDDING_INPUT_TYPE.QUERY, EMBEDDING_MODEL_TIME_LIMIT
+      );
       console.log(`Retrieved query embedding from ${embeddingModel} in ${secondsFrom(embeddingStartTime)} seconds`);
       
       if (queryEmbedding) {
@@ -39,7 +47,7 @@ export const handleQuery = async (
             queryEmbedding,
             embeddingModel,
             filterDatasets,
-            maxDocuments,
+            numDocsToFetch,
             DATABASE.SUPABASE
           );
           documents = fetchedDocuments;
@@ -50,6 +58,9 @@ export const handleQuery = async (
       }
     }
 
+    if (rerankingModel != RERANKING_MODEL.NONE) {
+
+    }
 
     if (generateAnswer) {
       const responseStartTime = Date.now();

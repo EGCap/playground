@@ -1,9 +1,12 @@
 import fs from 'fs/promises';
+import { encodingForModel } from "js-tiktoken";
 
 import { TextChunk } from '../types';
 
+const encoder = encodingForModel("gpt-3.5-turbo");
+
 export const parseData = async (
-    filename: string, startLine: number, endLine: number
+    filename: string, startLine: number, endLine: number, maxTokensPerChunk?: number
 ) => {
     // read JSONL file
     let rawdata = await fs.readFile(filename, 'utf-8');
@@ -15,11 +18,20 @@ export const parseData = async (
         if (line && line.length > 0) {
             try {
                 const parsedLine = JSON.parse(line);
+
+                // Shorten the text to the max token count.
+                let tokensToEmbed = encoder.encode(parsedLine.toEmbed);
+                if (maxTokensPerChunk && tokensToEmbed.length > maxTokensPerChunk) {
+                    tokensToEmbed = tokensToEmbed.slice(0, maxTokensPerChunk);
+                }
+                const textToEmbed = encoder.decode(tokensToEmbed);
+
                 const chunk = {
-                    textToEmbed: parsedLine.toEmbed,
+                    textToEmbed: textToEmbed,
+                    numTokens: tokensToEmbed.length,
                     chunkIndex: i,
                     document: {
-                        rawText: parsedLine.value?.text ?? parsedLine.toEmbed,
+                        rawText: parsedLine.value?.text ?? textToEmbed,
                         title: parsedLine.value?.title ?? "",
                         url: parsedLine.value?.url ?? "",
                     }

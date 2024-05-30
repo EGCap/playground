@@ -1,4 +1,4 @@
-import { DATABASE, DATASET, EmbeddedTextChunk, TextChunk, enabledEmbeddingModels } from "../types";
+import { DATABASE, DATASET, EMBEDDING_INPUT_TYPE, EmbeddedTextChunk, TextChunk, enabledEmbeddingModels } from "../types";
 import { uploadEmbeddings } from "./database";
 import { getEmbedding } from "./embedding";
 
@@ -8,7 +8,7 @@ export const handleUpload = async (text: string) => {
   // Embed and upload text using every enabled embedding model.
   await Promise.all(enabledEmbeddingModels.map(async (embeddingModel) => {
     // Step 1: try to embed the text.
-    const textEmbedding = await getEmbedding(text, embeddingModel);
+    const textEmbedding = await getEmbedding(text, embeddingModel, EMBEDDING_INPUT_TYPE.DOCUMENT);
     if (!textEmbedding) {
       console.log(`Embedding via ${embeddingModel} failed`);
       success = false;

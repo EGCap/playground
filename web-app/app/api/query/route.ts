@@ -5,8 +5,7 @@ import { DATASET, EMBEDDING_MODEL } from '@/engine/types';
 // Routes on the free plan timeout after 5 seconds (504 - error).
 export async function POST(request: NextRequest) {
     const body = await request.json()
-    const { query, modelsToRetrieveDocs, generateAnswer, datasets, maxDocuments } = body;
-
+    const { query, generateAnswer, modelsToRetrieveDocs, rerankingModel, datasets, maxDocuments } = body;
 
     // Get embedding models list from dictionary of toggles.
     let embeddingModels = [];
@@ -36,7 +35,7 @@ export async function POST(request: NextRequest) {
         embeddingModels.push(null);
     }
 
-    const queryResult = await handleQuery(query, embeddingModels, filterDatasets, maxDocuments, generateAnswer)
+    const queryResult = await handleQuery(query, embeddingModels, filterDatasets, rerankingModel, maxDocuments, generateAnswer);
 
     return NextResponse.json(queryResult);
 }

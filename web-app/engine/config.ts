@@ -16,3 +16,12 @@ export const BASETEN_API_KEY: string = process.env.BASETEN_API_KEY as string;
 
 // Cohere
 export const COHERE_API_KEY: string = process.env.COHERE_API_KEY as string;
+
+// Voyage AI
+export const VOYAGE_API_KEY: string = process.env.VOYAGE_API_KEY as string;
+
+// Jina
+export const JINA_API_KEY: string = process.env.JINA_API_KEY as string;
+
+// Nomic
+export const NOMIC_API_KEY: string = process.env.NOMIC_API_KEY as string;

@@ -8,7 +8,7 @@ const encoder = encodingForModel("gpt-3.5-turbo");
 export const getOpenAIEmbeddings = async (inputs: string[]) => {
     const response = await openaiClient.embeddings.create({
         input: inputs,
-        model: 'text-embedding-ada-002'
+        model: 'text-embedding-3-large'
     });
     return response.data.map(result => result.embedding);
 }

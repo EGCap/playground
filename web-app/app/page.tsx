@@ -9,7 +9,10 @@ import {
   enabledDatasets,
   enabledEmbeddingModels,
   userFriendlyNameByDataset,
-  userFriendlyNameByModel,
+  modelNameByProvider,
+  enabledRerankingModels,
+  RERANKING_MODEL,
+  rerankingModelNameByProvider,
 } from "@/engine/types";
 import { FormEvent, useState } from "react";
 
@@ -17,12 +20,11 @@ const DEFAULT_MAX_DOCUMENTS: number = 5;
 const MAX_DOCUMENTS_UPPER_BOUND: number = 20;
 
 // Used for determinstic ordering of models / results.
-const modelSorter = (model1: string | null, model2: string | null) => {
+const embeddingModelSorter = (model1: string | null, model2: string | null) => {
   const idx1 = model1 ? enabledEmbeddingModels.indexOf(EMBEDDING_MODEL[model1 as keyof typeof EMBEDDING_MODEL]) : -1;
   const idx2 = model2 ? enabledEmbeddingModels.indexOf(EMBEDDING_MODEL[model2 as keyof typeof EMBEDDING_MODEL]) : -1;
   return idx1 - idx2;
 }
-
 
 // Creates a dictionary of embedding models with all values set to true
 const initialEmbeddingChoices = enabledEmbeddingModels.reduce((acc, model) => {
@@ -45,6 +47,7 @@ export default function Home() {
   const [datasetsChoices, setDatasetsChoices] = useState<{
     [key: string]: boolean;
   }>(initialDatasetChoices);
+  const [rerankingModel, setRerankingModel] = useState<RERANKING_MODEL>(RERANKING_MODEL.NONE);
   const [queryResponse, setQueryResponse] = useState<QueryResponse>();
   const [loading, setLoading] = useState<boolean>(false);
   const [uploadText, setUploadText] = useState<string>("");
@@ -72,6 +75,7 @@ export default function Home() {
         query: query,
         generateAnswer: generateAnswer,
         modelsToRetrieveDocs: embeddingChoices,
+        rerankingModel: rerankingModel as RERANKING_MODEL,
         datasets: datasetsChoices,
         maxDocuments: maxDocuments,
       }),
@@ -144,13 +148,13 @@ export default function Home() {
     );
   };
 
-  const displayModelChoice = () => {
+  const displayEmbeddingModelChoice = () => {
     return (
       <div>
-        {Object.keys(embeddingChoices).sort(modelSorter).map((model: string) => {
+        {Object.keys(embeddingChoices).sort(embeddingModelSorter).map((model: string) => {
           const modelName =
             EMBEDDING_MODEL[model as keyof typeof EMBEDDING_MODEL];
-          const friendlyName = userFriendlyNameByModel.get(modelName);
+          const friendlyName = modelNameByProvider.get(modelName);
           return (
             <div key={model}>
               <input
@@ -164,6 +168,29 @@ export default function Home() {
                     [model]: e.target.checked,
                   })
                 }
+              />
+              <label className="pl-2">{friendlyName}</label>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const displayRerankingModelChoice = () => {
+    return (
+      <div>
+        {enabledRerankingModels.map((model: RERANKING_MODEL) => {
+          const friendlyName = rerankingModelNameByProvider.get(model);
+          return (
+            <div key={model}>
+              <input
+                type="radio"
+                value={model as RERANKING_MODEL}
+                name="modelChoice"
+                className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-600"
+                checked={rerankingModel as RERANKING_MODEL == model as RERANKING_MODEL}
+                onChange={(e) => setRerankingModel(e.target.value as RERANKING_MODEL)}
               />
               <label className="pl-2">{friendlyName}</label>
             </div>
@@ -297,22 +324,27 @@ export default function Home() {
           <div className="flex flex-col gap-2 mt-4">
             <div className="flex flex-row gap-12">
               <div>
-                {/* Embedding models */}
+                {/* Embedding model options */}
                 <div className="mt-4">
-                  <p className="font-bold">Embedding models</p>
-                  {displayModelChoice()}
+                  <p className="font-bold">Embedding Models</p>
+                  {displayEmbeddingModelChoice()}
                 </div>
-              </div>
-              <div>
                 {/* Dataset options */}
                 <div className="mt-4">
                   <p className="font-bold">Datasets</p>
                   {displayDatasets()}
                 </div>
+              </div>
+              <div>
+                {/* Reranking model options */}
+                <div className="mt-4">
+                  <p className="font-bold">Reranking Model</p>
+                  {displayRerankingModelChoice()}
+                </div>
 
                 {/* Additional options */}
                 <div className="leading-6 mt-2">
-                  <p className="font-bold">Extra:</p>
+                  <p className="font-bold">Extras</p>
                   <div>
                     <input
                       type="checkbox"
@@ -386,7 +418,7 @@ export default function Home() {
       <div className="flex flex-row gap-4 mt-6 overflow-x-auto">
         {queryResponse &&
           queryResponse.data.sort((a: QueryData, b: QueryData) => {
-            return modelSorter(a.embeddingModel, b.embeddingModel);
+            return embeddingModelSorter(a.embeddingModel, b.embeddingModel);
           }).map((querydata, idx) => {
             const chunks = querydata.documents.map((chunk, index) => {
               return (
@@ -402,7 +434,7 @@ export default function Home() {
               <div className="flex flex-col min-w-[50%] sm:min-w-0 text-xs sm:text-base sm:flex-1" key={idx}>
                 <p>
                   <b>Embedding Model</b>:{" "}
-                  {querydata.embeddingModel ? userFriendlyNameByModel.get(querydata.embeddingModel) : 'No context retrieved'}
+                  {querydata.embeddingModel ? modelNameByProvider.get(querydata.embeddingModel) : 'No context retrieved'}
                 </p>
                 <p><b>Answer</b>: {querydata.answer.response}</p>
                 <div className="flex flex-col gap-4 sm:flex-1">{chunks}</div>
