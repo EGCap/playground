@@ -5,11 +5,20 @@ import { encodingForModel } from "js-tiktoken";
 const openaiClient = new OpenAI({apiKey: OPENAI_API_KEY});
 const encoder = encodingForModel("gpt-3.5-turbo");
 
-export const getOpenAIEmbeddings = async (inputs: string[]) => {
-    const response = await openaiClient.embeddings.create({
-        input: inputs,
-        model: 'text-embedding-3-large'
-    });
+export const getOpenAIEmbeddings = async (inputs: string[], outputDimension?: number) => {
+    let response;
+    if (outputDimension) {
+        response = await openaiClient.embeddings.create({
+            input: inputs,
+            model: 'text-embedding-3-large',
+            dimensions: outputDimension,
+        });
+    } else {
+        response = await openaiClient.embeddings.create({
+            input: inputs,
+            model: 'text-embedding-3-large',
+        });
+    }
     return response.data.map(result => result.embedding);
 }
 

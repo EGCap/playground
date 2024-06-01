@@ -12,6 +12,8 @@ export const getEmbeddingDimensionForModel = (embeddingModel: EMBEDDING_MODEL) =
     switch (embeddingModel as EMBEDDING_MODEL) {
         case EMBEDDING_MODEL.OPEN_AI:
             return 3072;
+        case EMBEDDING_MODEL.OPEN_AI_1536:
+            return 1536;
         case EMBEDDING_MODEL.IMAGEBIND:
             return 1024;
         case EMBEDDING_MODEL.MPNET_BASE_V2:
@@ -42,6 +44,8 @@ export const getEmbeddingsBatch = async (
             switch (embeddingModel as EMBEDDING_MODEL) {
                 case EMBEDDING_MODEL.OPEN_AI:
                     return getOpenAIEmbeddings(inputs);
+                case EMBEDDING_MODEL.OPEN_AI_1536:
+                    return getOpenAIEmbeddings(inputs, 1536);
                 case EMBEDDING_MODEL.IMAGEBIND:
                     return getImageBindEmbeddings(inputs);
                 case EMBEDDING_MODEL.MPNET_BASE_V2:

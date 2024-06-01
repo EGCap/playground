@@ -36,6 +36,9 @@ export enum EMBEDDING_MODEL {
     // OpenAI's hosted text-embedding-3-large model.
     OPEN_AI = 'OPEN_AI', // dim: 3072
 
+    // OpenAI's hosted text-embedding-3-large model, subsampled to 1536 dim for indexing.
+    OPEN_AI_1536 = 'OPEN_AI_1536', // dim: 1536
+
     // Cohere's hosted embed-english-v3.0 model.
     COHERE = 'COHERE', // dim: 1024
 
@@ -76,6 +79,7 @@ export enum RERANKING_MODEL {
 // Add additional embedding models to enable here
 export const enabledEmbeddingModels: EMBEDDING_MODEL[] = [
     EMBEDDING_MODEL.OPEN_AI,
+    EMBEDDING_MODEL.OPEN_AI_1536,
     EMBEDDING_MODEL.COHERE,
     EMBEDDING_MODEL.VOYAGE,
     EMBEDDING_MODEL.JINA,
@@ -84,6 +88,7 @@ export const enabledEmbeddingModels: EMBEDDING_MODEL[] = [
   
 export const modelNameByProvider = new Map(Object.entries({
     [EMBEDDING_MODEL.OPEN_AI]: "OpenAI (text-embedding-3-large)",
+    [EMBEDDING_MODEL.OPEN_AI_1536]: "OpenAI (text-embedding-3-large-1536)",
     [EMBEDDING_MODEL.COHERE]: "Cohere (embed-english-v3.0)",
     [EMBEDDING_MODEL.VOYAGE]: "Voyage (voyage-large-2-instruct)",
     [EMBEDDING_MODEL.JINA]: "Jina (jina-embeddings-v2-base-en)",
