@@ -8,4 +8,5 @@ dist/
 *.d.ts
 .DS_STORE
 *.jsonl
+.idea/
 *.infisical.json
