@@ -6,11 +6,13 @@ import {
   QueryData,
   QueryResponse,
   RetrievedDocument,
+  RERANKER_MODEL
 } from "../types";
 import { secondsFrom } from "./clock";
 import { fetchNearestDocuments } from "./database";
 import { getEmbeddingWithTimeLimit } from "./embedding";
 import { getChatModelResponse } from "./inference";
+import { rerank } from "./reranker";
 
 // We wait 5 seconds for an embedding model response before timing out, due to cold start.
 const EMBEDDING_MODEL_TIME_LIMIT: number = 5000;
@@ -21,6 +23,7 @@ export const handleQuery = async (
   filterDatasets: DATASET[] | null,
   maxDocuments: number,
   generateAnswer: boolean = true,
+  rerankerModel: RERANKER_MODEL = RERANKER_MODEL.VOYAGE,
 ) => {
   let data: QueryData[] = [];
   
@@ -44,12 +47,18 @@ export const handleQuery = async (
           );
           documents = fetchedDocuments;
           console.log(`Retrieved nearest docs using ${embeddingModel} in ${secondsFrom(fetchDocsStartTime)} seconds`);
+
+          // Apply reranking if enabled
+          if (rerankerModel !== RERANKER_MODEL.NONE) {
+            const rerankStartTime = Date.now();
+            documents = await rerank(queryText, documents, rerankerModel);
+            console.log(`Reranked documents using ${rerankerModel} in ${secondsFrom(rerankStartTime)} seconds`);
+          }
         } catch (err) {
-          console.log("Failed to getNearestDocuments:", err);
+          console.log("Failed to process documents:", err);
         }
       }
     }
-
 
     if (generateAnswer) {
       const responseStartTime = Date.now();
@@ -71,7 +80,6 @@ export const handleQuery = async (
       documents: documents,
     });
   }));
-
 
   const response = {
     query: queryText,

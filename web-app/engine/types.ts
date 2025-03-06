@@ -73,10 +73,26 @@ export enum LANGUAGE_MODEL {
     GPT_3_5 = 'GPT_3_5'
 }
 
-export type RetrievedDocument = {
-    dataset: string,
-    document: string,
-    similarity: number,
+export enum RERANKER_MODEL {
+  VOYAGE = "voyage-2",
+  NONE = "none"
+}
+
+export interface RetrievedDocument {
+  document: string;
+  dataset: DATASET;
+  score: number;
+  rerank_score?: number;  // Optional reranking score
+}
+
+export interface VoyageRerankerResult {
+  score: number;
+  document: string;
+  index: number;
+}
+
+export interface VoyageRerankerResponse {
+  results: VoyageRerankerResult[];
 }
 
 export type QueryData = {

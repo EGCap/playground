@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import {handleQuery} from '@/engine/utils/query'
-import { DATASET, EMBEDDING_MODEL } from '@/engine/types';
+import { DATASET, EMBEDDING_MODEL, RERANKER_MODEL } from '@/engine/types';
 
 // Routes on the free plan timeout after 5 seconds (504 - error).
 export async function POST(request: NextRequest) {
     const body = await request.json()
-    const { query, modelsToRetrieveDocs, generateAnswer, datasets, maxDocuments } = body;
-
+    const { query, modelsToRetrieveDocs, generateAnswer, datasets, maxDocuments, enableReranking } = body;
 
     // Get embedding models list from dictionary of toggles.
     let embeddingModels = [];
@@ -36,7 +35,17 @@ export async function POST(request: NextRequest) {
         embeddingModels.push(null);
     }
 
-    const queryResult = await handleQuery(query, embeddingModels, filterDatasets, maxDocuments, generateAnswer)
+    // Determine reranker model based on enableReranking flag
+    const rerankerModel = enableReranking ? RERANKER_MODEL.VOYAGE : RERANKER_MODEL.NONE;
+
+    const queryResult = await handleQuery(
+        query, 
+        embeddingModels, 
+        filterDatasets, 
+        maxDocuments, 
+        generateAnswer,
+        rerankerModel
+    );
 
     return NextResponse.json(queryResult);
 }

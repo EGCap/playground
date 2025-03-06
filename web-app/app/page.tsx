@@ -38,6 +38,7 @@ const formStates = ["Search"];
 
 export default function Home() {
   const [generateAnswer, setGenerateAnswer] = useState<boolean>(false);
+  const [enableReranking, setEnableReranking] = useState<boolean>(true);
   const [query, setQuery] = useState<string>("");
   const [embeddingChoices, setEmbeddingChoices] = useState<{
     [key: string]: boolean;
@@ -74,6 +75,7 @@ export default function Home() {
         modelsToRetrieveDocs: embeddingChoices,
         datasets: datasetsChoices,
         maxDocuments: maxDocuments,
+        enableReranking: enableReranking,
       }),
     });
 
@@ -84,6 +86,10 @@ export default function Home() {
 
   const handleCheckboxChange = () => {
     setGenerateAnswer(!generateAnswer);
+  };
+
+  const handleRerankingChange = () => {
+    setEnableReranking(!enableReranking);
   };
 
   const handleMaxDocumentsChange = (event: FormEvent<HTMLInputElement>) => {
@@ -222,6 +228,43 @@ export default function Home() {
       </div>
     );
   };
+
+  const displayOptions = () => {
+    return (
+      <div className="mt-4 flex flex-col gap-3">
+        <div className="flex items-center">
+          <input
+            type="checkbox"
+            checked={generateAnswer}
+            onChange={handleCheckboxChange}
+            className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-600"
+          />
+          <label className="pl-2">Generate answer using GPT-3.5</label>
+        </div>
+        <div className="flex items-center">
+          <input
+            type="checkbox"
+            checked={enableReranking}
+            onChange={handleRerankingChange}
+            className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-600"
+          />
+          <label className="pl-2">Enable Voyage reranking</label>
+        </div>
+        <div className="flex items-center">
+          <input
+            type="number"
+            value={maxDocuments}
+            onChange={handleMaxDocumentsChange}
+            className="w-20 rounded border-gray-300 text-emerald-600 focus:ring-emerald-600"
+            min={1}
+            max={MAX_DOCUMENTS_UPPER_BOUND}
+          />
+          <label className="pl-2">Number of documents to fetch</label>
+        </div>
+      </div>
+    );
+  };
+
   function classNames(...classes: string[]) {
     return classes.filter(Boolean).join(" ");
   }
@@ -312,28 +355,7 @@ export default function Home() {
 
                 {/* Additional options */}
                 <div className="leading-6 mt-2">
-                  <p className="font-bold">Extra:</p>
-                  <div>
-                    <input
-                      type="checkbox"
-                      className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-600"
-                      checked={generateAnswer}
-                      onChange={handleCheckboxChange}
-                    />
-                    <label className="ml-2">Generate an Answer (RAG)?</label>
-                  </div>
-                  <div>
-                    <input
-                      type="number"
-                      min="1"
-                      max={MAX_DOCUMENTS_UPPER_BOUND}
-                      step="1"
-                      className="h-8 rounded border-gray-300 focus:ring-emerald-600"
-                      value={maxDocuments}
-                      onChange={handleMaxDocumentsChange}
-                    />
-                    <label className="ml-2">Number of Documents to Fetch</label>
-                  </div>
+                  {displayOptions()}
                 </div>
               </div>
             </div>
